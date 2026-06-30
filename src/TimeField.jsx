@@ -2,7 +2,8 @@ import { pad } from "./time";
 import { C } from "./theme";
 
 // 큰 시/분 드롭다운 + 직접 입력(네이티브) 겸용 시간 선택기
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
+// 오후 9시(21시)~새벽 5시는 제외 → 6시~20시만 선택
+const HOURS = Array.from({ length: 15 }, (_, i) => i + 6); // 6,7,...,20
 const MINS = [0, 30]; // 0분 / 30분만 선택
 
 const selStyle = {
@@ -13,7 +14,8 @@ const selStyle = {
 
 export default function TimeField({ label, value, onChange, disabled = false, icon }) {
   const [h, m] = value.split(":").map(Number);
-  // 직접 입력으로 들어온 5분 단위가 아닌 분도 목록에 보이게
+  // 기존에 저장된, 범위 밖 시/분도 그 값만은 목록에 보이게
+  const hours = HOURS.includes(h) ? HOURS : [...HOURS, h].sort((a, b) => a - b);
   const mins = MINS.includes(m) ? MINS : [...MINS, m].sort((a, b) => a - b);
   return (
     <div style={{ minWidth: 0, opacity: disabled ? 0.4 : 1 }}>
@@ -24,7 +26,7 @@ export default function TimeField({ label, value, onChange, disabled = false, ic
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <select aria-label={`${label} 시`} value={h} style={selStyle} disabled={disabled}
           onChange={(e) => onChange(`${pad(Number(e.target.value))}:${pad(m)}`)}>
-          {HOURS.map((x) => <option key={x} value={x}>{x}시</option>)}
+          {hours.map((x) => <option key={x} value={x}>{x}시</option>)}
         </select>
         <select aria-label={`${label} 분`} value={m} style={selStyle} disabled={disabled}
           onChange={(e) => onChange(`${pad(h)}:${pad(Number(e.target.value))}`)}>
