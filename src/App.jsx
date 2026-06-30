@@ -33,6 +33,11 @@ function useLocalStorage(key, initial) {
 
 const QUICK_ENDS = ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"];
 
+// 하루 1번 자동백업 판단용
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+const readLastBackup = () => { try { return localStorage.getItem("lastBackupDate") || ""; } catch { return ""; } };
+const writeLastBackup = (v) => { try { localStorage.setItem("lastBackupDate", v); } catch { /* 무시 */ } };
+
 export default function App() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -84,8 +89,6 @@ export default function App() {
   };
 
   // ── 클라우드 동기화 / 인증 ──────────────────────────────
-  const snapshot = () => ({ entries, account, defaultStart, defaultEnd, showHolidays });
-
   // 클라우드 동기화용 refs (최신 인증/상태/변경여부)
   const authRef = useRef(auth);
   const snapRef = useRef(null);
@@ -96,17 +99,23 @@ export default function App() {
     snapRef.current = { entries, account, defaultStart, defaultEnd, showHolidays };
   }, [entries, account, defaultStart, defaultEnd, showHolidays]);
 
-  // 변경분이 있을 때만 클라우드에 저장 (레이지 — 중복 쓰기 방지)
-  const flushBackup = useCallback(async () => {
+  // 클라우드 저장. force=true(수동 버튼)면 항상, 자동이면 "하루 1번 + 변경분 있을 때"만.
+  const flushBackup = useCallback(async (force = false) => {
     const a = authRef.current;
-    if (!a || !a.password || !dirtyRef.current || !snapRef.current) return;
-    dirtyRef.current = false;
+    if (!a || !a.password) { if (force) setCloud({ status: "error", msg: "로그인이 필요합니다" }); return; }
+    const snap = snapRef.current;
+    if (!snap) return;
+    if (!force) {
+      if (!dirtyRef.current) return;                  // 바뀐 게 없으면 안 함
+      if (readLastBackup() === todayStr()) return;     // 오늘 이미 자동백업함
+    }
     setCloud({ status: "saving", msg: "" });
     try {
-      await backupToCloud(a.name, a.password, snapRef.current);
+      await backupToCloud(a.name, a.password, snap);
+      dirtyRef.current = false;
+      writeLastBackup(todayStr());
       setCloud({ status: "saved", msg: "" });
     } catch (e) {
-      dirtyRef.current = true; // 실패 시 다음 기회에 다시 시도
       setCloud({ status: "error", msg: e.message });
     }
   }, []);
@@ -150,19 +159,6 @@ export default function App() {
     setTab("cal");
   };
 
-  // 설정에서 수동 백업
-  const doBackup = async () => {
-    if (!auth) return;
-    setCloud({ status: "saving", msg: "" });
-    try {
-      await backupToCloud(auth.name, auth.password, snapshot());
-      dirtyRef.current = false;
-      setCloud({ status: "saved", msg: "" });
-    } catch (e) {
-      setCloud({ status: "error", msg: e.message });
-    }
-  };
-
   // 복구: 비밀번호 다시 입력 → 클라우드 데이터로 덮어쓰기
   const doRestore = async () => {
     if (!auth) return;
@@ -179,23 +175,24 @@ export default function App() {
     }
   };
 
-  // 변경되면 15초 뒤 한 번만 백업(연속 입력은 묶임). 첫 렌더는 건너뜀.
+  // 변경되면 dirty 표시 + 잠시 뒤 자동백업 시도(하루 1번만 실제 저장). 첫 렌더는 건너뜀.
   useEffect(() => {
     if (!didMount.current) { didMount.current = true; return; }
     if (!authRef.current || !authRef.current.password) return; // 오프라인 진입이면 자동백업 안 함
     dirtyRef.current = true;
-    const t = setTimeout(flushBackup, 15000);
+    const t = setTimeout(() => flushBackup(false), 8000);
     return () => clearTimeout(t);
   }, [entries, account, defaultStart, defaultEnd, showHolidays, flushBackup]);
 
-  // 앱을 백그라운드로 보내거나 닫을 때 즉시 저장(놓침 방지)
+  // 앱을 백그라운드로 보내거나 닫을 때도 자동백업 시도(하루 1번 규칙은 동일)
   useEffect(() => {
-    const onHide = () => { if (document.visibilityState === "hidden") flushBackup(); };
-    document.addEventListener("visibilitychange", onHide);
-    window.addEventListener("pagehide", flushBackup);
+    const flush = () => flushBackup(false);
+    const onVis = () => { if (document.visibilityState === "hidden") flush(); };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("pagehide", flush);
     return () => {
-      document.removeEventListener("visibilitychange", onHide);
-      window.removeEventListener("pagehide", flushBackup);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("pagehide", flush);
     };
   }, [flushBackup]);
 
@@ -374,7 +371,7 @@ export default function App() {
               </div>
 
               <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={doBackup}
+                <button onClick={() => flushBackup(true)}
                   style={{ ...primaryBtn, flex: 1, padding: "12px 0", fontSize: 15 }}>
                   지금 백업
                 </button>
@@ -402,7 +399,8 @@ export default function App() {
             </div>
 
             <div style={{ fontSize: 12, color: C.sub, textAlign: "center", lineHeight: 1.6 }}>
-              기록은 이 기기에 저장되고, 로그인하면 클라우드에 자동 백업됩니다.
+              기록은 이 기기에 저장되고, 클라우드 자동 백업은 <b>하루 1번</b>만 됩니다.
+              그날 추가로 바꾼 내용을 바로 저장하려면 <b>“지금 백업”</b>을 눌러주세요.
             </div>
           </>
         )}
