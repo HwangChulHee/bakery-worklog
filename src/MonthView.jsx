@@ -67,7 +67,7 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                   <button key={di} onClick={() => onOpenDay(year, month, d)} title={hol || (e && e.memo) || undefined}
                     aria-label={`${month + 1}월 ${d}일${isOff ? " 휴무" : ""}${hol ? ` ${hol}` : ""}`} style={{
                     minHeight: 94, borderRadius: 10, cursor: "pointer", overflow: "hidden",
-                    border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
+                    border: isToday ? `2px solid ${C.honey}` : isOff ? `2px solid ${C.off}` : `1px solid ${C.line}`,
                     background: isOff ? C.offBg : e ? C.workBg : C.card, padding: "6px 0 5px",
                     display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: "flex-start", gap: 3 }}>
                     <span style={{ fontSize: 15, fontWeight: 700, color: dayColor, textAlign: "center" }}>{d}</span>

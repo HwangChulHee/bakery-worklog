@@ -224,6 +224,9 @@ describe("주차별 계산", () => {
     expect(document.body.textContent).toContain("5 + 4.5 = 9.5h"); // 검산식
     expect(document.body.textContent).toContain("6/3 (수)");       // 빠진 날(날짜순 나열)
     expect(document.body.textContent).toContain("병원");           // 사유 메모
+    // 6/4(목)·6/5(금)은 미입력 → 경고 (오늘=6/15 이전)
+    expect(document.body.textContent).toContain("입력안함");
+    expect(document.body.textContent).toContain("6/4 (목)");
   });
 });
 

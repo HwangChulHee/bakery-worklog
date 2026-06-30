@@ -154,10 +154,10 @@ describe("weeklyBreakdown", () => {
       "2026-6-2": { start: "08:30", end: "13:00" }, // 4.5
       "2026-6-8": { start: "08:30", end: "14:00" }, // 5.5
     };
-    expect(weeklyBreakdown(entries, 2026, 5)).toEqual([
+    expect(weeklyBreakdown(entries, 2026, 5, 0)).toEqual([
       { days: [{ d: 1, dow: "월", hours: 5, memo: "" }, { d: 2, dow: "화", hours: 4.5, memo: "" }],
-        offs: [], total: 9.5, hrs: [5, 4.5] },
-      { days: [{ d: 8, dow: "월", hours: 5.5, memo: "" }], offs: [], total: 5.5, hrs: [5.5] },
+        offs: [], missing: [], total: 9.5, hrs: [5, 4.5] },
+      { days: [{ d: 8, dow: "월", hours: 5.5, memo: "" }], offs: [], missing: [], total: 5.5, hrs: [5.5] },
     ]);
   });
   it("휴무는 offs 로 분리하고(메모 포함) 합계에서 제외, 일한 주만 포함", () => {
@@ -165,9 +165,21 @@ describe("weeklyBreakdown", () => {
       "2026-6-1": { off: true, memo: "병원" },
       "2026-6-2": { start: "08:30", end: "13:30" },
     };
-    expect(weeklyBreakdown(entries, 2026, 5)).toEqual([
+    expect(weeklyBreakdown(entries, 2026, 5, 0)).toEqual([
       { days: [{ d: 2, dow: "화", hours: 5, memo: "" }],
-        offs: [{ d: 1, dow: "월", memo: "병원" }], total: 5, hrs: [5] },
+        offs: [{ d: 1, dow: "월", memo: "병원" }], missing: [], total: 5, hrs: [5] },
+    ]);
+  });
+  it("월~금 중 기록 없는 날을 missing 으로 표시 (upToDay 이하만)", () => {
+    const entries = { "2026-6-1": { start: "08:30", end: "13:30" } }; // 6/1(월) 5h
+    // 6/2~6/5(화~금) 미입력, upToDay=5 → 화수목금 경고
+    expect(weeklyBreakdown(entries, 2026, 5, 5)).toEqual([
+      {
+        days: [{ d: 1, dow: "월", hours: 5, memo: "" }],
+        offs: [],
+        missing: [{ d: 2, dow: "화" }, { d: 3, dow: "수" }, { d: 4, dow: "목" }, { d: 5, dow: "금" }],
+        total: 5, hrs: [5],
+      },
     ]);
   });
 });

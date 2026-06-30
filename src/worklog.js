@@ -33,22 +33,23 @@ export function monthTotal(entries, year, month) {
   );
 }
 
-// 주차별 계산용(검산): 일한 날 상세 + 그 주의 휴무(메모 포함) + 합계.
-// 일한 날이 있는 주만 포함. days=근무한 날, offs=휴무한 날, hrs=시간 배열.
-export function weeklyBreakdown(entries, year, month) {
+// 주차별 계산용(검산): 일한 날 상세 + 그 주의 휴무(메모) + 미입력 평일(월~금) + 합계.
+// 일한 날이 있는 주만 포함. missing = 월~금 중 아무 기록 없는 날(d <= upToDay) → 실수 검토용.
+export function weeklyBreakdown(entries, year, month, upToDay = Infinity) {
   return getWeeks(year, month)
     .map((week) => {
-      const days = [], offs = [];
+      const days = [], offs = [], missing = [];
       week.forEach((d) => {
         if (!d) return;
+        const wday = new Date(year, month, d).getDay();
+        const dow = DOW[wday];
         const e = entries[keyOf(year, month, d)];
-        if (!e) return;
-        const dow = DOW[new Date(year, month, d).getDay()];
-        if (e.off) offs.push({ d, dow, memo: e.memo || "" });
-        else if (e.start) days.push({ d, dow, hours: hoursOf(e), memo: e.memo || "" });
+        if (e && e.off) offs.push({ d, dow, memo: e.memo || "" });
+        else if (e && e.start) days.push({ d, dow, hours: hoursOf(e), memo: e.memo || "" });
+        else if (!e && wday >= 1 && wday <= 5 && d <= upToDay) missing.push({ d, dow });
       });
       const total = days.reduce((a, b) => a + b.hours, 0);
-      return { days, offs, total, hrs: days.map((x) => x.hours) };
+      return { days, offs, missing, total, hrs: days.map((x) => x.hours) };
     })
     .filter((w) => w.days.length > 0);
 }

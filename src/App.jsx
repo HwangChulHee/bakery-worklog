@@ -3,6 +3,7 @@ import { restoreFromCloud } from "./cloud";
 import { C, FONT, iconBtn, primaryBtn, ghostBtn } from "./theme";
 import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary, weeklyBreakdown } from "./worklog";
 import { hoursOf, fmtHours } from "./time";
+import { holidayName } from "./holidays";
 import { useLocalStorage } from "./useLocalStorage";
 import { useDailyBackup } from "./useDailyBackup";
 import LoginScreen from "./LoginScreen";
@@ -222,7 +223,11 @@ export default function App() {
   }, []);
 
   const buildText = () => buildSummary({ entries, year, month, account });
-  const breakdown = weeklyBreakdown(entries, year, month);
+  // 미입력 평일 경고 범위: 이번 달은 오늘까지, 지난 달은 전체, 다음 달은 없음
+  const isThisMonth = year === now.getFullYear() && month === now.getMonth();
+  const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
+  const upToDay = isThisMonth ? now.getDate() : isPastMonth ? Infinity : 0;
+  const breakdown = weeklyBreakdown(entries, year, month, upToDay);
   const breakdownTotal = breakdown.reduce((s, w) => s + w.total, 0);
   const fmtN = (h) => (Number.isInteger(h) ? `${h}` : h.toFixed(1));
   const copyText = async () => {
@@ -319,10 +324,11 @@ export default function App() {
                 </div>
 
                 {breakdown.map((w, i) => {
-                  // 근무/휴무를 날짜순으로 한 줄씩 나열
+                  // 근무/휴무/미입력(공휴일 제외)을 날짜순으로 한 줄씩 나열
                   const rows = [
-                    ...w.days.map((x) => ({ ...x, off: false })),
-                    ...w.offs.map((x) => ({ ...x, off: true })),
+                    ...w.days.map((x) => ({ ...x, kind: "work" })),
+                    ...w.offs.map((x) => ({ ...x, kind: "off" })),
+                    ...w.missing.filter((x) => !holidayName(year, month, x.d)).map((x) => ({ ...x, kind: "miss" })),
                   ].sort((a, b) => a.d - b.d);
                   return (
                     <div key={i} style={{ marginBottom: 22 }}>
@@ -332,15 +338,20 @@ export default function App() {
                           background: C.workBg, borderRadius: 8, padding: "5px 16px" }}>{i + 1}주차</span>
                       </div>
                       {/* 날짜순 나열 (메모는 아랫줄) */}
-                      {rows.map((r, ri) => (
-                        <div key={r.d} style={{ padding: "9px 2px",
-                          borderTop: ri === 0 ? "none" : `1px solid ${C.bg}` }}>
+                      {rows.map((r, ri) => {
+                        const isMiss = r.kind === "miss", isOffRow = r.kind === "off";
+                        return (
+                        <div key={r.d} style={{ padding: isMiss ? "9px 8px" : "9px 2px",
+                          borderTop: ri === 0 ? "none" : `1px solid ${C.bg}`,
+                          background: isMiss ? "#FCEBE9" : "transparent", borderRadius: isMiss ? 8 : 0 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                            <span style={{ fontSize: 22, fontWeight: 600, color: r.off ? C.off : C.ink }}>
+                            <span style={{ fontSize: 22, fontWeight: isMiss ? 700 : 600,
+                              color: isMiss ? C.sun : isOffRow ? C.off : C.ink }}>
                               {month + 1}/{r.d} ({r.dow})
                             </span>
-                            <span style={{ fontSize: 22, fontWeight: 800, color: r.off ? C.off : C.honeyDark }}>
-                              {r.off ? "휴무" : `${fmtN(r.hours)}h`}
+                            <span style={{ fontSize: isMiss ? 18 : 22, fontWeight: 800,
+                              color: isMiss ? C.sun : isOffRow ? C.off : C.honeyDark }}>
+                              {isMiss ? "⚠️ 입력안함" : isOffRow ? "휴무" : `${fmtN(r.hours)}h`}
                             </span>
                           </div>
                           {r.memo && (
@@ -348,7 +359,8 @@ export default function App() {
                               lineHeight: 1.4 }}>{r.memo}</div>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
                       {/* 검산식 (오른쪽 강조 칩, 길면 줄바꿈) */}
                       <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
                         <span style={{ background: C.workBg, border: `1px solid ${C.honey}`, borderRadius: 10,
