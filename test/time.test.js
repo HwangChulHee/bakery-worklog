@@ -64,4 +64,9 @@ describe("hoursOf", () => {
   it("퇴근이 출근보다 빠르면 음수 대신 0", () => {
     expect(hoursOf({ start: "13:30", end: "08:30" })).toBe(0);
   });
+  it("휴무/빈 값이면 0", () => {
+    expect(hoursOf({ off: true })).toBe(0);
+    expect(hoursOf(undefined)).toBe(0);
+    expect(hoursOf({})).toBe(0);
+  });
 });

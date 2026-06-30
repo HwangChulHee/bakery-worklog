@@ -90,16 +90,28 @@ describe("근무 입력 흐름", () => {
     expect(saved["2026-6-2"]).toEqual({ start: "08:30", end: "13:30" });
   });
 
-  it("휴무 버튼으로 기존 기록을 지운다", () => {
+  it("휴무로 표시하면 달력에 '휴무'가 뜨고 정리본/합계에서 제외된다", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "6월 2일" }));
+    fireEvent.click(screen.getByRole("button", { name: "휴무" }));
+    // 시트가 닫히고 달력 셀에 '휴무' 표시
+    expect(screen.getByText("휴무")).toBeInTheDocument();
+    // 정리본에는 안 나옴
+    expect(document.body.textContent).not.toContain("6/2(화)");
+    // localStorage 에 off 로 저장
+    expect(JSON.parse(localStorage.getItem("entries"))["2026-6-2"]).toEqual({ off: true });
+  });
+
+  it("기록 지우기로 휴무/근무 기록을 완전히 삭제한다", () => {
     localStorage.setItem(
       "entries",
-      JSON.stringify({ "2026-6-2": { start: "08:30", end: "13:30" } })
+      JSON.stringify({ "2026-6-2": { off: true } })
     );
     render(<App />);
-    expect(document.body.textContent).toContain("6/2(화)");
-    fireEvent.click(screen.getByRole("button", { name: /^6월 2일/ }));
-    fireEvent.click(screen.getByRole("button", { name: "휴무" }));
-    expect(document.body.textContent).not.toContain("6/2(화)");
+    expect(screen.getByText("휴무")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^6월 2일/ })); // aria-label "6월 2일 휴무"
+    fireEvent.click(screen.getByRole("button", { name: "기록 지우기" }));
+    expect(screen.queryByText("휴무")).not.toBeInTheDocument();
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-2"]).toBeUndefined();
   });
 

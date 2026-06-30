@@ -124,6 +124,25 @@ describe("buildSummary (어머니 형식)", () => {
   });
 });
 
+describe("휴무(off) 처리", () => {
+  const entries = {
+    "2026-6-1": { start: "08:30", end: "13:30" }, // 근무 5h
+    "2026-6-2": { off: true }, // 휴무
+  };
+
+  it("휴무는 시간 합계에 포함되지 않는다", () => {
+    expect(monthTotal(entries, 2026, 5)).toBe(5);
+    expect(weekSum(entries, 2026, 5, getWeeks(2026, 5)[0])).toBe(5);
+  });
+
+  it("휴무는 정리본에 표시되지 않는다", () => {
+    const text = buildSummary({ entries, year: 2026, month: 5, account: "" });
+    expect(text).toContain("6/1(월) 8:30~1:30(5h)");
+    expect(text).not.toContain("6/2");
+    expect(text.endsWith("==>총근무시간(5h)")).toBe(true);
+  });
+});
+
 describe("DOW", () => {
   it("일요일부터 시작하는 7요일", () => {
     expect(DOW).toEqual(["일", "월", "화", "수", "목", "금", "토"]);

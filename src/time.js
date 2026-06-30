@@ -18,5 +18,8 @@ export const fmtClock = (t) => {
 // 5 → "5h", 4.5 → "4.5h"
 export const fmtHours = (h) => `${Number.isInteger(h) ? h : h.toFixed(1)}h`;
 
-// 휴게 공제 없는 단순 경과시간(시간 단위). 음수면 0.
-export const hoursOf = (e) => Math.max(0, (toMin(e.end) - toMin(e.start)) / 60);
+// 휴게 공제 없는 단순 경과시간(시간 단위). 음수/휴무(시간 없음)면 0.
+export const hoursOf = (e) => {
+  if (!e || !e.start || !e.end) return 0;
+  return Math.max(0, (toMin(e.end) - toMin(e.start)) / 60);
+};

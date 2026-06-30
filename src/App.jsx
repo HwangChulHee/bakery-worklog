@@ -31,6 +31,7 @@ const C = {
   bg: "#F6F1E9", card: "#FFFFFF", ink: "#2A2521", sub: "#857A6D",
   line: "#E7DFD3", honey: "#CC8A3C", honeyDark: "#B0721E",
   workBg: "#FBEFD8", sun: "#C2453B", sat: "#2F6FB0", band: "#EFE5D3",
+  offBg: "#ECE5D9", off: "#9A8C78",
 };
 
 export default function App() {
@@ -57,14 +58,19 @@ export default function App() {
 
   const openEditor = (d) => {
     const e = entries[keyOf(d)];
-    setDraft(e ? { ...e } : { start: defaultStart, end: defaultEnd });
+    // 휴무({off:true})는 시간이 없으니 기본값으로 시작
+    setDraft(e && e.start ? { start: e.start, end: e.end } : { start: defaultStart, end: defaultEnd });
     setEditing(d);
   };
   const save = () => {
-    setEntries((p) => ({ ...p, [keyOf(editing)]: { ...draft } }));
+    setEntries((p) => ({ ...p, [keyOf(editing)]: { start: draft.start, end: draft.end } }));
     setEditing(null);
   };
-  const clearDay = () => {
+  const markOff = () => {
+    setEntries((p) => ({ ...p, [keyOf(editing)]: { off: true } }));
+    setEditing(null);
+  };
+  const removeDay = () => {
     setEntries((p) => { const n = { ...p }; delete n[keyOf(editing)]; return n; });
     setEditing(null);
   };
@@ -128,18 +134,21 @@ export default function App() {
                     {week.map((d, di) => {
                       if (!d) return <div key={di} />;
                       const e = entries[keyOf(d)];
+                      const isOff = !!(e && e.off);
                       const hol = showHolidays ? holidayName(year, month, d) : null;
                       const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
                       const dayColor = hol ? C.sun : di === 0 ? C.sun : di === 6 ? C.sat : C.ink;
                       return (
                         <button key={di} onClick={() => openEditor(d)} title={hol || undefined}
-                          aria-label={`${month + 1}월 ${d}일${hol ? ` ${hol}` : ""}`} style={{
+                          aria-label={`${month + 1}월 ${d}일${isOff ? " 휴무" : ""}${hol ? ` ${hol}` : ""}`} style={{
                           aspectRatio: "1 / 1.05", borderRadius: 10, cursor: "pointer", overflow: "hidden",
                           border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
-                          background: e ? C.workBg : C.card, padding: 2,
+                          background: isOff ? C.offBg : e ? C.workBg : C.card, padding: 2,
                           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1 }}>
                           <span style={{ fontSize: 13, fontWeight: 600, color: dayColor }}>{d}</span>
-                          {e && <span style={{ fontSize: 12, fontWeight: 800, color: C.honeyDark }}>{fmtHours(hoursOf(e))}</span>}
+                          {isOff
+                            ? <span style={{ fontSize: 11, fontWeight: 800, color: C.off }}>휴무</span>
+                            : e && <span style={{ fontSize: 12, fontWeight: 800, color: C.honeyDark }}>{fmtHours(hoursOf(e))}</span>}
                           {hol && (
                             <span style={{ fontSize: 9, fontWeight: 700, color: C.sun, lineHeight: 1.05,
                               maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -257,9 +266,15 @@ export default function App() {
             </div>
 
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={clearDay} style={{ ...ghostBtn, flex: 1 }}>휴무</button>
+              <button onClick={markOff} style={{ ...ghostBtn, flex: 1 }}>휴무</button>
               <button onClick={save} style={{ ...primaryBtn, flex: 2, padding: "14px 0", fontSize: 16 }}>저장</button>
             </div>
+            {entries[keyOf(editing)] && (
+              <button onClick={removeDay} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: "10px 0",
+                fontSize: 14, color: C.sub, border: "none", background: "transparent" }}>
+                기록 지우기
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -42,7 +42,7 @@ export function buildSummary({ entries, year, month, account }) {
     week.forEach((d) => {
       if (!d) return;
       const e = entries[keyOf(year, month, d)];
-      if (!e) return;
+      if (!e || !e.start) return; // 휴무({off:true})는 정리본에서 제외
       any = true;
       const dow = DOW[new Date(year, month, d).getDay()];
       lines.push(
