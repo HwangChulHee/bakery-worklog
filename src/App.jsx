@@ -159,29 +159,28 @@ export default function App() {
     setInstallEvt(null);
   };
 
-  // Android 뒤로가기: 설정/입력시트가 열려 있으면 앱 종료 대신 그것부터 닫기
-  const modalOpen = editing != null || tab === "settings";
+  // Android 뒤로가기: 모달이 열려 있으면 닫고, 홈에서는 두 번 눌러야 종료
   const editingRef = useRef(editing);
   const tabRef = useRef(tab);
-  const poppedRef = useRef(false);
+  const armedRef = useRef(false);
+  const [exitToast, setExitToast] = useState(false);
   useEffect(() => { editingRef.current = editing; }, [editing]);
   useEffect(() => { tabRef.current = tab; }, [tab]);
   useEffect(() => {
-    if (!modalOpen) return;
-    try { window.history.pushState({ bwModal: true }, ""); } catch { /* 무시 */ }
+    const guard = () => { try { window.history.pushState({ guard: true }, ""); } catch { /* 무시 */ } };
+    guard(); // 뒤로가기를 잡아낼 항목 1개 유지
     const onPop = () => {
-      poppedRef.current = true;
-      if (editingRef.current != null) setEditing(null);
-      else setTab("cal");
+      if (editingRef.current != null) { setEditing(null); guard(); return; }   // 입력시트 닫기
+      if (tabRef.current === "settings") { setTab("cal"); guard(); return; }    // 설정 닫기
+      if (armedRef.current) { try { window.history.back(); } catch { /* 무시 */ } return; } // 두 번째 → 종료
+      armedRef.current = true;                                                   // 첫 번째 → 안내
+      setExitToast(true);
+      guard();
+      setTimeout(() => { armedRef.current = false; setExitToast(false); }, 2000);
     };
     window.addEventListener("popstate", onPop);
-    return () => {
-      window.removeEventListener("popstate", onPop);
-      // UI로 닫은 경우(뒤로가기 아님) 우리가 추가한 히스토리 항목 제거
-      if (!poppedRef.current) { try { window.history.back(); } catch { /* 무시 */ } }
-      poppedRef.current = false;
-    };
-  }, [modalOpen]);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const buildText = () => buildSummary({ entries, year, month, account });
   const copyText = async () => {
@@ -272,6 +271,16 @@ export default function App() {
         <EditorSheet editing={editing} draft={draft} setDraft={setDraft}
           draftHours={hoursOf(draft)} hasEntry={!!entries[editKey]}
           onSave={save} onMarkOff={markOff} onRemove={removeDay} onClose={() => setEditing(null)} />
+      )}
+
+      {exitToast && (
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 24, display: "flex",
+          justifyContent: "center", zIndex: 30, pointerEvents: "none" }}>
+          <div style={{ background: "rgba(42,37,33,0.92)", color: "#fff", fontSize: 13, fontWeight: 700,
+            padding: "10px 16px", borderRadius: 20 }}>
+            한 번 더 누르면 종료됩니다
+          </div>
+        </div>
       )}
     </div>
   );

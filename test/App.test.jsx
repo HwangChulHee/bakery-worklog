@@ -232,6 +232,14 @@ describe("뒤로가기(Android)", () => {
     expect(screen.queryByText("기본 출근시간")).not.toBeInTheDocument();
   });
 
+  it("달력 홈에서 뒤로가기 한 번 → 종료 안내가 뜬다", () => {
+    renderApp();
+    act(() => { window.dispatchEvent(new PopStateEvent("popstate")); });
+    expect(screen.getByText("한 번 더 누르면 종료됩니다")).toBeInTheDocument();
+    // 아직 앱은 그대로 (정리본 보임)
+    expect(screen.getByText("정리본")).toBeInTheDocument();
+  });
+
   it("입력 시트에서 뒤로가기 누르면 시트가 닫힌다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "6월 2일" }));
