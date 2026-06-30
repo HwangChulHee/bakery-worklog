@@ -34,16 +34,6 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
         </div>
       )}
 
-      {/* 월 총합 */}
-      <div style={{ background: `linear-gradient(135deg, ${C.honey}, ${C.honeyDark})`, color: "#fff",
-        borderRadius: 16, padding: "16px 18px",
-        display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <span style={{ fontSize: 20, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 22, lineHeight: 1 }}>🍞</span>이번 달 총 근무
-        </span>
-        <span style={{ fontSize: 34, fontWeight: 800 }}>{fmtHours(monthTotal)}</span>
-      </div>
-
       {/* 달력 */}
       <div style={{ background: C.card, borderRadius: 16, padding: 12, border: `1px solid ${C.line}`, marginBottom: 16 }}>
         <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 4, marginBottom: 6 }}>
@@ -93,6 +83,16 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
             </div>
           );
         })}
+      </div>
+
+      {/* 월 총합 (달력 아래) */}
+      <div style={{ background: `linear-gradient(135deg, ${C.honey}, ${C.honeyDark})`, color: "#fff",
+        borderRadius: 16, padding: "16px 18px", marginBottom: 16,
+        display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 20, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 22, lineHeight: 1 }}>🍞</span>이번 달 총 근무
+        </span>
+        <span style={{ fontSize: 34, fontWeight: 800 }}>{fmtHours(monthTotal)}</span>
       </div>
     </>
   );
