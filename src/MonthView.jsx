@@ -51,24 +51,26 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                 const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
                 const dayColor = hol ? C.sun : di === 0 ? C.sun : di === 6 ? C.sat : C.ink;
                 return (
-                  <button key={di} onClick={() => onOpenDay(year, month, d)} title={hol || undefined}
+                  <button key={di} onClick={() => onOpenDay(year, month, d)} title={hol || (e && e.memo) || undefined}
                     aria-label={`${month + 1}월 ${d}일${isOff ? " 휴무" : ""}${hol ? ` ${hol}` : ""}`} style={{
-                    position: "relative", aspectRatio: "1 / 1.05", borderRadius: 10, cursor: "pointer", overflow: "hidden",
+                    minHeight: 64, borderRadius: 10, cursor: "pointer", overflow: "hidden",
                     border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
-                    background: isOff ? C.offBg : e ? C.workBg : C.card, padding: 2,
-                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1 }}>
-                    {e && e.memo && (
-                      <span style={{ position: "absolute", top: 3, right: 4, width: 5, height: 5,
-                        borderRadius: "50%", background: C.honeyDark }} />
-                    )}
-                    <span style={{ fontSize: 13, fontWeight: 600, color: dayColor }}>{d}</span>
+                    background: isOff ? C.offBg : e ? C.workBg : C.card, padding: "4px 3px",
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: dayColor }}>{d}</span>
                     {isOff
                       ? <span style={{ fontSize: 11, fontWeight: 800, color: C.off }}>휴무</span>
                       : e && <span style={{ fontSize: 12, fontWeight: 800, color: C.honeyDark }}>{fmtHours(hoursOf(e))}</span>}
                     {hol && (
-                      <span style={{ fontSize: 9, fontWeight: 700, color: C.sun, lineHeight: 1.05,
+                      <span style={{ fontSize: 9, fontWeight: 700, color: C.sun, lineHeight: 1.1,
                         maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {hol}
+                      </span>
+                    )}
+                    {e && e.memo && (
+                      <span style={{ fontSize: 9, fontWeight: 600, color: C.sub, lineHeight: 1.1,
+                        maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        📝{e.memo}
                       </span>
                     )}
                   </button>
