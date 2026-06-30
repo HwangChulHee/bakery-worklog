@@ -1,16 +1,78 @@
-# React + Vite
+# 🥖 빵집 근무시간
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+빵집 근무시간을 간편하게 기록·정리하는 모바일 웹앱(PWA)입니다.
+달력에서 날짜를 눌러 출근/퇴근 시간만 넣으면, 일·주·월 합계와 어머니께 보내는 "정리본" 텍스트가 자동으로 만들어집니다.
 
-Currently, two official plugins are available:
+**배포 주소:** https://bakery-worklog.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 주요 기능
 
-## React Compiler
+- **달력 / 주간 보기 전환** — 월간 달력 또는 한 주(일~토)를 리스트로 보기
+- **간편 입력** — 날짜 탭 → 출근/퇴근 시간 입력, 기본 출퇴근 시간 설정 가능
+- **휴무 표시** — "휴무"로 표시(합계·정리본에서는 제외)
+- **자동 합계** — 일별 / 주차 소계 / 월 총합 자동 계산 (휴게 공제 없는 단순 경과시간)
+- **공휴일 표시** — `date-holidays` 기반으로 미래 연도까지 자동(한국어), 설정에서 on/off
+- **정리본 복사** — `6/1(월) 8:30~1:30(5h)` / `=>24h` / `==>총근무시간(...)` / `==>계좌` 형식 텍스트 생성 + 복사
+- **자동 저장** — 모든 기록·설정을 기기(localStorage)에 저장 (오프라인 동작)
+- **로그인 + 클라우드 백업** — 허용된 사용자만 로그인, 기록을 클라우드(Upstash Redis)에 백업/복구
+- **PWA** — 홈 화면에 앱처럼 설치, 스플래시 화면, 오프라인 지원
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 기술 스택
 
-## Expanding the ESLint configuration
+- React 19 + Vite
+- `vite-plugin-pwa` (서비스워커 / 매니페스트)
+- `date-holidays` (공휴일)
+- Vercel 서버리스 함수(`/api`) + Upstash Redis (클라우드 백업)
+- Vitest + React Testing Library (테스트)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 로컬 개발
+
+```bash
+npm install
+npm run dev      # 개발 서버
+npm run test     # 테스트 (Vitest)
+npm run lint     # ESLint
+npm run build    # 프로덕션 빌드
+```
+
+## 배포 (Vercel)
+
+`main`에 푸시하면 Vercel이 자동 배포합니다. 로그인/클라우드 백업을 쓰려면 다음 설정이 필요합니다.
+
+1. **저장소 연결** — Vercel 프로젝트 → Storage → **Upstash Redis** 생성 후 프로젝트에 연결
+   (자동으로 `KV_REST_API_URL`, `KV_REST_API_TOKEN` 환경변수가 추가됩니다)
+2. **허용 사용자 등록** — Settings → Environments → Production → 환경변수 추가
+   - `AUTH_USERS` = `이름1:비번1,이름2:비번2` 형식 (이름/비번에 `:` `,` 사용 금지)
+3. **재배포** — Deployments → 최신 배포 → Redeploy
+
+## 클라우드 백업 동작
+
+- 데이터는 **기기(localStorage)에 먼저 저장**되어 오프라인에서도 그대로 동작합니다.
+- 로그인하면 **클라우드 자동 백업은 하루 1번**(그날 첫 변경 또는 앱을 닫을 때) 이루어집니다.
+- 그날 추가로 바꾼 내용을 바로 저장하려면 설정의 **"지금 백업"** 버튼을 누릅니다.
+- 비밀번호는 서버에서만 검증되며, 이름별로(`worklog:<이름>`) 분리 저장됩니다.
+
+## 폰에 설치하기
+
+- **안드로이드 (크롬):** 주소 접속 → ⋮ → "앱 설치" / "홈 화면에 추가"
+- **아이폰 (사파리):** 주소 접속 → 공유 → "홈 화면에 추가"
+
+설치 후 등록된 이름·비밀번호로 로그인하면 됩니다. (한 번 로그인하면 자동 로그인)
+
+## 프로젝트 구조
+
+```
+api/backup.js      클라우드 백업 서버리스 함수 (인증 + Redis 저장/복구)
+src/
+  App.jsx          메인 앱 (달력/주간/설정/입력)
+  LoginScreen.jsx  로그인 화면
+  SplashScreen.jsx 시작 스플래시
+  time.js          시간 계산 순수 함수
+  worklog.js       달력 구성 / 합계 / 정리본 생성
+  holidays.js      공휴일 (date-holidays)
+  cloud.js         클라우드 백업 클라이언트
+  theme.js         색상 / 폰트
+test/              Vitest 테스트
+```
+
+> 참고: `design/` 폴더(원본 대용량 이미지)는 빌드/깃에서 제외됩니다. 앱에는 `public/`의 가공본(webp)만 사용합니다.
