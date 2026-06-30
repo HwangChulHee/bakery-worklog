@@ -319,7 +319,7 @@ export default function App() {
             {/* 주차별 계산 (검산) */}
             {breakdown.length > 0 && (
               <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
-                <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 14, display: "flex", alignItems: "center", gap: 7 }}>
+                <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 22, display: "flex", alignItems: "center", gap: 7 }}>
                   <span style={{ fontSize: 23, lineHeight: 1 }}>🧮</span>주차별 계산
                 </div>
 
@@ -363,10 +363,11 @@ export default function App() {
                         </div>
                         );
                       })}
-                      {/* 검산식 (오른쪽 강조 칩, 길면 줄바꿈) */}
-                      <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
-                        <span style={{ background: C.workBg, border: `1px solid ${C.honey}`, borderRadius: 10,
-                          padding: "8px 16px", fontFamily: "'SF Mono', ui-monospace, Menlo, monospace",
+                      {/* 검산식 (좌: 주차별 합계 / 우: 덧셈, 길면 줄바꿈) */}
+                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.line}`,
+                        display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 18, fontWeight: 800, color: C.sub, flexShrink: 0 }}>주차별 합계</span>
+                        <span style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace",
                           fontSize: 20, fontWeight: 700, color: C.honeyDark,
                           maxWidth: "100%", whiteSpace: "normal", textAlign: "right", lineHeight: 1.5 }}>
                           {w.hrs.map(fmtN).join(" + ")} = <b style={{ fontSize: 23 }}>{fmtHours(w.total)}</b>
