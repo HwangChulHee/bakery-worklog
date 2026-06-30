@@ -331,7 +331,7 @@ export default function App() {
                     ...w.missing.filter((x) => !holidayName(year, month, x.d)).map((x) => ({ ...x, kind: "miss" })),
                   ].sort((a, b) => a.d - b.d);
                   return (
-                    <div key={i} style={{ marginBottom: 32 }}>
+                    <div key={i} style={{ marginBottom: 40 }}>
                       {/* 주 헤더: N주차 */}
                       <div style={{ marginBottom: 4 }}>
                         <span style={{ fontSize: 19, fontWeight: 800, color: C.honeyDark,
@@ -341,25 +341,21 @@ export default function App() {
                       {rows.map((r, ri) => {
                         const isMiss = r.kind === "miss", isOffRow = r.kind === "off";
                         return (
-                        <div key={r.d} style={{ padding: "9px 2px",
+                        <div key={r.d} style={{ display: "flex", alignItems: "baseline", gap: 8, padding: "9px 2px",
                           borderTop: ri === 0 ? "none" : `1px solid ${C.bg}` }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                            <span style={{ fontSize: 22, fontWeight: isMiss ? 700 : 600,
-                              color: isMiss ? C.sun : isOffRow ? C.off : C.ink }}>
-                              {month + 1}/{r.d} ({r.dow})
-                            </span>
-                            <span style={{ fontSize: isMiss ? 18 : 22, fontWeight: 800,
-                              color: isMiss ? C.sun : isOffRow ? C.off : C.honeyDark }}>
-                              {isMiss ? "⚠️ 입력안함" : isOffRow ? "🛌 휴무" : `🍞 ${fmtN(r.hours)}h`}
-                            </span>
-                          </div>
-                          {r.memo && (
-                            <div style={{ marginTop: 7, display: "inline-flex", alignItems: "center", gap: 6,
-                              background: C.noteBg, border: `1px solid ${C.note}`, borderRadius: 8,
-                              padding: "6px 12px", fontSize: 17, fontWeight: 700, color: C.note, lineHeight: 1.4 }}>
-                              <span style={{ fontSize: 15, lineHeight: 1 }}>📝</span>{r.memo}
-                            </div>
-                          )}
+                          <span style={{ fontSize: 22, fontWeight: isMiss ? 700 : 600, flexShrink: 0,
+                            color: isMiss ? C.sun : isOffRow ? C.off : C.ink }}>
+                            {month + 1}/{r.d} ({r.dow})
+                          </span>
+                          {/* 메모: 날짜와 시간 사이에 작게 */}
+                          <span title={r.memo || undefined} style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 600,
+                            color: C.note, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "right" }}>
+                            {r.memo || ""}
+                          </span>
+                          <span style={{ fontSize: isMiss ? 18 : 22, fontWeight: 800, flexShrink: 0,
+                            color: isMiss ? C.sun : isOffRow ? C.off : C.honeyDark }}>
+                            {isMiss ? "⚠️ 입력안함" : isOffRow ? "🛌 휴무" : `🍞 ${fmtN(r.hours)}h`}
+                          </span>
                         </div>
                         );
                       })}
