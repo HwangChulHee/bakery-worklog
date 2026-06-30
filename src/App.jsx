@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { holidayName } from "./holidays";
+import { backupToCloud, restoreFromCloud } from "./cloud";
 import { fmtClock, fmtHours, hoursOf } from "./time";
 import { DOW, keyOf as wKeyOf, getWeeks, weekSum as wWeekSum, monthTotal as wMonthTotal, buildSummary } from "./worklog";
 
@@ -45,11 +46,13 @@ export default function App() {
   const [defaultStart, setDefaultStart] = useLocalStorage("defaultStart", "08:30");
   const [defaultEnd, setDefaultEnd] = useLocalStorage("defaultEnd", "13:30");
   const [showHolidays, setShowHolidays] = useLocalStorage("showHolidays", true);
+  const [backupPassword, setBackupPassword] = useLocalStorage("backupPassword", "");
 
   const [tab, setTab] = useState("cal"); // "cal" | "settings"
   const [editing, setEditing] = useState(null); // day number or null
   const [draft, setDraft] = useState({ start: defaultStart, end: defaultEnd });
   const [copied, setCopied] = useState(false);
+  const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
 
   const keyOf = (d) => wKeyOf(year, month, d);
   const weeks = getWeeks(year, month);
@@ -79,6 +82,56 @@ export default function App() {
     if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
     setMonth(m); setYear(y);
   };
+
+  // ── 클라우드 백업 ──────────────────────────────
+  const snapshot = () => ({ entries, account, defaultStart, defaultEnd, showHolidays });
+
+  const doBackup = async (pw) => {
+    if (!pw) { setCloud({ status: "error", msg: "비밀번호를 입력하세요" }); return; }
+    setCloud({ status: "saving", msg: "" });
+    try {
+      await backupToCloud(pw, snapshot());
+      setCloud({ status: "saved", msg: "" });
+    } catch (e) {
+      setCloud({ status: "error", msg: e.message });
+    }
+  };
+
+  const doRestore = async () => {
+    if (!backupPassword) { setCloud({ status: "error", msg: "비밀번호를 입력하세요" }); return; }
+    if (!window.confirm("클라우드 백업으로 이 기기의 기록을 덮어씁니다. 계속할까요?")) return;
+    setCloud({ status: "restoring", msg: "" });
+    try {
+      const data = await restoreFromCloud(backupPassword);
+      if (!data) { setCloud({ status: "error", msg: "클라우드에 백업이 없습니다" }); return; }
+      if (data.entries) setEntries(data.entries);
+      if (data.account != null) setAccount(data.account);
+      if (data.defaultStart) setDefaultStart(data.defaultStart);
+      if (data.defaultEnd) setDefaultEnd(data.defaultEnd);
+      if (typeof data.showHolidays === "boolean") setShowHolidays(data.showHolidays);
+      setCloud({ status: "restored", msg: "" });
+    } catch (e) {
+      setCloud({ status: "error", msg: e.message });
+    }
+  };
+
+  // 변경되면 자동 백업 (비밀번호가 설정된 경우). 첫 렌더에서는 건너뛰어
+  // 새 기기에서 빈 데이터로 클라우드를 덮어쓰지 않도록 한다.
+  const pwRef = useRef(backupPassword);
+  useEffect(() => { pwRef.current = backupPassword; }, [backupPassword]);
+  const didMount = useRef(false);
+  useEffect(() => {
+    if (!didMount.current) { didMount.current = true; return; }
+    const pw = pwRef.current;
+    if (!pw) return;
+    const snap = { entries, account, defaultStart, defaultEnd, showHolidays };
+    const t = setTimeout(async () => {
+      setCloud({ status: "saving", msg: "" });
+      try { await backupToCloud(pw, snap); setCloud({ status: "saved", msg: "" }); }
+      catch (e) { setCloud({ status: "error", msg: e.message }); }
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [entries, account, defaultStart, defaultEnd, showHolidays]);
 
   // 정리본 텍스트 생성 (어머니 형식)
   const buildText = () => buildSummary({ entries, year, month, account });
@@ -217,6 +270,43 @@ export default function App() {
                   <span style={{ width: 24, height: 24, borderRadius: "50%", background: "#fff", display: "block" }} />
                 </button>
               </div>
+            </div>
+
+            {/* 클라우드 백업 */}
+            <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>클라우드 백업</div>
+              <div style={{ fontSize: 12, color: C.sub, lineHeight: 1.5, marginBottom: 12 }}>
+                비밀번호를 정하면 기록이 자동으로 클라우드에 백업됩니다. 폰을 바꾸거나
+                데이터가 사라졌을 때 같은 비밀번호로 복구하세요.
+              </div>
+
+              <div style={{ fontSize: 12, color: C.sub, fontWeight: 700, marginBottom: 6 }}>백업 비밀번호</div>
+              <input type="password" value={backupPassword} onChange={(e) => setBackupPassword(e.target.value)}
+                placeholder="백업 비밀번호" autoComplete="off"
+                style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${C.line}`, borderRadius: 10,
+                  padding: "10px 12px", fontSize: 14, marginBottom: 12, color: C.ink, background: C.bg }} />
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => doBackup(backupPassword)}
+                  style={{ ...primaryBtn, flex: 1, padding: "12px 0", fontSize: 15 }}>
+                  지금 백업
+                </button>
+                <button onClick={doRestore}
+                  style={{ ...ghostBtn, flex: 1, padding: "12px 0", fontSize: 15 }}>
+                  복구
+                </button>
+              </div>
+
+              {cloud.status && (
+                <div style={{ marginTop: 10, fontSize: 13, fontWeight: 700,
+                  color: cloud.status === "error" ? C.sun : C.honeyDark }}>
+                  {cloud.status === "saving" && "백업 중…"}
+                  {cloud.status === "saved" && "백업 완료 ✓"}
+                  {cloud.status === "restoring" && "복구 중…"}
+                  {cloud.status === "restored" && "복구 완료 ✓"}
+                  {cloud.status === "error" && `오류: ${cloud.msg}`}
+                </div>
+              )}
             </div>
 
             <div style={{ fontSize: 12, color: C.sub, textAlign: "center", lineHeight: 1.6 }}>

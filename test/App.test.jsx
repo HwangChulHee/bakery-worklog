@@ -163,3 +163,49 @@ describe("월 이동", () => {
     expect(screen.getByText("5월 근무")).toBeInTheDocument();
   });
 });
+
+describe("클라우드 백업 UI", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("'지금 백업'이 서버로 전송하고 완료 표시", async () => {
+    localStorage.setItem("backupPassword", JSON.stringify("mypw"));
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "지금 백업" }));
+
+    expect(await screen.findByText("백업 완료 ✓")).toBeInTheDocument();
+    const [url, opts] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/backup");
+    expect(opts.method).toBe("POST");
+    expect(JSON.parse(opts.body).password).toBe("mypw");
+  });
+
+  it("비밀번호 없이 백업하면 오류 안내", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "지금 백업" }));
+    expect(screen.getByText("오류: 비밀번호를 입력하세요")).toBeInTheDocument();
+  });
+
+  it("복구하면 클라우드 데이터로 채워진다", async () => {
+    localStorage.setItem("backupPassword", JSON.stringify("mypw"));
+    const data = {
+      entries: { "2026-6-2": { start: "08:30", end: "13:30" } },
+      account: "복구은행(1)",
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data }) }));
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "복구" }));
+
+    expect(await screen.findByText("복구 완료 ✓")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "달력" }));
+    expect(document.body.textContent).toContain("6/2(화)");
+    expect(document.body.textContent).toContain("복구은행(1)");
+  });
+});
