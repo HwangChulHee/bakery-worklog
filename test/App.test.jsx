@@ -42,13 +42,14 @@ describe("스플래시 / 자동 로그인", () => {
 });
 
 describe("App 기본 렌더", () => {
-  it("달력 화면과 하단 탭, 정리본이 보인다", () => {
+  it("달력 화면과 설정 버튼, 정리본이 보인다", () => {
     renderApp();
     expect(screen.getByText("정리본")).toBeInTheDocument();
     expect(screen.getByText("6월 근무")).toBeInTheDocument();
-    // 하단 탭바
-    expect(screen.getByRole("button", { name: "달력" })).toBeInTheDocument();
+    // 우상단 설정 버튼
     expect(screen.getByRole("button", { name: "설정" })).toBeInTheDocument();
+    // 달력 화면에선 뒤로(달력) 버튼이 없다 (설정 화면에서만)
+    expect(screen.queryByRole("button", { name: "달력" })).not.toBeInTheDocument();
   });
 
   it("기본 계좌가 정리본에 출력된다", () => {

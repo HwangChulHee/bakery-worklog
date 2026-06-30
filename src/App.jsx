@@ -236,12 +236,16 @@ export default function App() {
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.ink,
       fontFamily: FONT,
-      padding: "16px 16px 88px", boxSizing: "border-box" }}>
+      padding: "16px 16px 28px", boxSizing: "border-box" }}>
       <div style={{ maxWidth: 460, margin: "0 auto" }}>
 
         {tab === "cal" && (
           <>
-            {/* 헤더 */}
+            {/* 상단: 설정 버튼 */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+              <button onClick={() => setTab("settings")} aria-label="설정" style={iconBtn}>⚙</button>
+            </div>
+            {/* 월 이동 헤더 */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <button onClick={() => shiftMonth(-1)} style={navBtn}>◀</button>
               <div style={{ textAlign: "center" }}>
@@ -328,8 +332,9 @@ export default function App() {
 
         {tab === "settings" && (
           <>
-            <div style={{ textAlign: "center", marginBottom: 18 }}>
-              <div style={{ fontSize: 26, fontWeight: 800 }}>설정</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+              <button onClick={() => setTab("cal")} aria-label="달력" style={iconBtn}>←</button>
+              <div style={{ fontSize: 24, fontWeight: 800 }}>설정</div>
             </div>
 
             <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
@@ -455,30 +460,15 @@ export default function App() {
           </div>
         </div>
       )}
-
-      {/* 하단 탭바 */}
-      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 10,
-        background: C.card, borderTop: `1px solid ${C.line}`, display: "flex", justifyContent: "center" }}>
-        <div style={{ maxWidth: 460, width: "100%", display: "flex" }}>
-          {[["cal", "달력"], ["settings", "설정"]].map(([k, label]) => {
-            const on = tab === k;
-            return (
-              <button key={k} onClick={() => setTab(k)} style={{
-                flex: 1, padding: "14px 0", border: "none", background: "transparent", cursor: "pointer",
-                fontSize: 15, fontWeight: 800, color: on ? C.honeyDark : C.sub,
-                borderTop: on ? `2px solid ${C.honey}` : "2px solid transparent" }}>
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }
 
 const navBtn = { width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.line}`,
   background: C.card, fontSize: 16, cursor: "pointer", color: C.ink };
+const iconBtn = { width: 40, height: 40, borderRadius: 12, border: `1px solid ${C.line}`,
+  background: C.card, fontSize: 18, cursor: "pointer", color: C.ink,
+  display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 };
 const primaryBtn = { background: C.honey, color: "#fff", border: "none", borderRadius: 12,
   fontWeight: 800, cursor: "pointer" };
 const ghostBtn = { background: C.card, color: C.sub, border: `1px solid ${C.line}`,
