@@ -20,10 +20,14 @@ export default function LoginScreen({ onSubmit, onOffline, busy, error, showOffl
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, color: C.ink, fontFamily: FONT,
+    <div style={{ minHeight: "100vh", color: C.ink, fontFamily: FONT, position: "relative",
+      backgroundColor: C.bg,
+      backgroundImage: "url(/bakery-bg.webp)", backgroundSize: "cover", backgroundPosition: "center",
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16, boxSizing: "border-box" }}>
-      <form onSubmit={submit} style={{ width: "100%", maxWidth: 360, background: C.card,
-        borderRadius: 20, padding: 24, border: `1px solid ${C.line}` }}>
+      {/* 가독성 오버레이 */}
+      <div style={{ position: "absolute", inset: 0, background: "rgba(35,24,14,0.4)" }} />
+      <form onSubmit={submit} style={{ position: "relative", width: "100%", maxWidth: 360, background: C.card,
+        borderRadius: 20, padding: 24, border: `1px solid ${C.line}`, boxShadow: "0 12px 40px rgba(0,0,0,0.28)" }}>
         <div style={{ textAlign: "center", marginBottom: 22 }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
             <BreadLogo size={84} />

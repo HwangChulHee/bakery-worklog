@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# 원본 디자인 소스(대용량) — 빌드/배포엔 public/ 의 가공본만 사용
+design/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
