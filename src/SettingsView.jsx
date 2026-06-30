@@ -1,4 +1,5 @@
-import { C, iconBtn, primaryBtn, ghostBtn, timeBox, timeLabel, timeInput } from "./theme";
+import { C, iconBtn, primaryBtn, ghostBtn } from "./theme";
+import TimeField from "./TimeField";
 
 // 설정 화면
 export default function SettingsView({
@@ -14,15 +15,9 @@ export default function SettingsView({
       </div>
 
       <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
-        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-          <label style={timeBox}>
-            <span style={timeLabel}>기본 출근시간</span>
-            <input type="time" value={defaultStart} onChange={(e) => setDefaultStart(e.target.value)} style={timeInput} />
-          </label>
-          <label style={timeBox}>
-            <span style={timeLabel}>기본 퇴근시간</span>
-            <input type="time" value={defaultEnd} onChange={(e) => setDefaultEnd(e.target.value)} style={timeInput} />
-          </label>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
+          <TimeField label="기본 출근시간" value={defaultStart} onChange={setDefaultStart} />
+          <TimeField label="기본 퇴근시간" value={defaultEnd} onChange={setDefaultEnd} />
         </div>
 
         <div style={{ fontSize: 12, color: C.sub, fontWeight: 700, marginBottom: 6 }}>입금 계좌</div>

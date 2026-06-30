@@ -145,6 +145,15 @@ describe("근무 입력 흐름", () => {
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-2"]).toBeUndefined();
   });
 
+  it("시/분 드롭다운으로 시간을 선택해 저장", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "6월 4일" })); // 목
+    fireEvent.change(screen.getByLabelText("출근 시"), { target: { value: "9" } });
+    fireEvent.change(screen.getByLabelText("출근 분"), { target: { value: "0" } });
+    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    expect(JSON.parse(localStorage.getItem("entries"))["2026-6-4"].start).toBe("09:00");
+  });
+
   it("퇴근시간을 바꿔 저장하면 반영된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: /^6월 3일/ })); // 6/3(수), 지방선거일이어도 입력 가능
