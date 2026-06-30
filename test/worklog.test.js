@@ -155,13 +155,20 @@ describe("weeklyBreakdown", () => {
       "2026-6-8": { start: "08:30", end: "14:00" }, // 5.5
     };
     expect(weeklyBreakdown(entries, 2026, 5)).toEqual([
-      { hrs: [5, 4.5], total: 9.5 },
-      { hrs: [5.5], total: 5.5 },
+      { days: [{ d: 1, dow: "월", hours: 5, memo: "" }, { d: 2, dow: "화", hours: 4.5, memo: "" }],
+        offs: [], total: 9.5, hrs: [5, 4.5] },
+      { days: [{ d: 8, dow: "월", hours: 5.5, memo: "" }], offs: [], total: 5.5, hrs: [5.5] },
     ]);
   });
-  it("휴무/빈날은 제외", () => {
-    const entries = { "2026-6-1": { off: true }, "2026-6-2": { start: "08:30", end: "13:30" } };
-    expect(weeklyBreakdown(entries, 2026, 5)).toEqual([{ hrs: [5], total: 5 }]);
+  it("휴무는 offs 로 분리하고(메모 포함) 합계에서 제외, 일한 주만 포함", () => {
+    const entries = {
+      "2026-6-1": { off: true, memo: "병원" },
+      "2026-6-2": { start: "08:30", end: "13:30" },
+    };
+    expect(weeklyBreakdown(entries, 2026, 5)).toEqual([
+      { days: [{ d: 2, dow: "화", hours: 5, memo: "" }],
+        offs: [{ d: 1, dow: "월", memo: "병원" }], total: 5, hrs: [5] },
+    ]);
   });
 });
 

@@ -213,14 +213,17 @@ describe("localStorage 자동복원", () => {
 });
 
 describe("주차별 계산", () => {
-  it("정리본 위에 주차별 수식이 표시된다", () => {
+  it("검산식과 함께 그 주의 휴무 사유(메모)가 표시된다", () => {
     localStorage.setItem("entries", JSON.stringify({
       "2026-6-1": { start: "08:30", end: "13:30" },
       "2026-6-2": { start: "08:30", end: "13:00" },
+      "2026-6-3": { off: true, memo: "병원" },
     }));
     renderApp();
     expect(screen.getByText("주차별 계산")).toBeInTheDocument();
-    expect(document.body.textContent).toContain("5 + 4.5 = 9.5h");
+    expect(document.body.textContent).toContain("5 + 4.5 = 9.5h"); // 검산식
+    expect(document.body.textContent).toContain("6/3(수) 휴무");   // 빠진 날
+    expect(document.body.textContent).toContain("병원");           // 사유 메모
   });
 });
 
@@ -274,7 +277,7 @@ describe("UX: 공유 / 되돌리기 / 오늘", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "◀" })); // 5월로
     expect(screen.getByText("5월 근무")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "오늘" }));
+    fireEvent.click(screen.getByRole("button", { name: /오늘/ }));
     expect(screen.getByText("6월 근무")).toBeInTheDocument();
   });
 });

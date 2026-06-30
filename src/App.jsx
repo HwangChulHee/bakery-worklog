@@ -311,26 +311,58 @@ export default function App() {
               </pre>
             </div>
 
-            {/* 주차별 계산 (정리본 아래) */}
+            {/* 주차별 계산 (검산) */}
             {breakdown.length > 0 && (
               <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
-                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontSize: 19, lineHeight: 1 }}>🧮</span>주차별 계산
                 </div>
-                <div style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 21, lineHeight: 1.9, color: C.ink }}>
-                  {breakdown.map((w, i) => (
-                    <div key={i} style={{ display: "flex", gap: 8 }}>
-                      <span style={{ color: C.sub, fontWeight: 700, flexShrink: 0 }}>{i + 1}주</span>
-                      <span>{w.hrs.map(fmtN).join(" + ")} = <b style={{ color: C.honeyDark }}>{fmtHours(w.total)}</b></span>
+
+                {breakdown.map((w, i) => (
+                  <div key={i} style={{ marginBottom: 14 }}>
+                    {/* 주 헤더: N주 ... 합계 */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: C.honeyDark,
+                        background: C.workBg, borderRadius: 8, padding: "3px 12px" }}>{i + 1}주차</span>
+                      <span style={{ fontSize: 18, fontWeight: 800, color: C.honeyDark }}>{fmtHours(w.total)}</span>
                     </div>
-                  ))}
-                  {breakdown.length > 1 && (
-                    <div style={{ display: "flex", gap: 8, marginTop: 6, paddingTop: 6, borderTop: `1px dashed ${C.line}` }}>
-                      <span style={{ color: C.sub, fontWeight: 700, flexShrink: 0 }}>합계</span>
-                      <span>{breakdown.map((w) => fmtN(w.total)).join(" + ")} = <b style={{ color: C.honeyDark }}>{fmtHours(breakdownTotal)}</b></span>
+                    {/* 근무한 날 */}
+                    {w.days.map((dy) => (
+                      <div key={`d${dy.d}`} style={{ display: "flex", justifyContent: "space-between",
+                        alignItems: "baseline", fontSize: 17, padding: "2px 4px" }}>
+                        <span style={{ color: C.ink }}>
+                          {month + 1}/{dy.d}({dy.dow})
+                          {dy.memo && <span style={{ color: C.note, fontSize: 14, marginLeft: 6 }}>📝 {dy.memo}</span>}
+                        </span>
+                        <span style={{ fontWeight: 700, color: C.ink }}>{fmtN(dy.hours)}h</span>
+                      </div>
+                    ))}
+                    {/* 그 주에 쉰 날 (왜 빠졌는지) */}
+                    {w.offs.map((o) => (
+                      <div key={`o${o.d}`} style={{ display: "flex", alignItems: "baseline", gap: 6,
+                        fontSize: 15, padding: "2px 4px", color: C.off }}>
+                        <span>🛌 {month + 1}/{o.d}({o.dow}) 휴무</span>
+                        {o.memo && <span style={{ color: C.note }}>· {o.memo}</span>}
+                      </div>
+                    ))}
+                    {/* 검산식 */}
+                    <div style={{ marginTop: 4, paddingTop: 4, borderTop: `1px dashed ${C.line}`,
+                      fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 16, color: C.sub }}>
+                      {w.hrs.map(fmtN).join(" + ")} = <b style={{ color: C.honeyDark }}>{fmtHours(w.total)}</b>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
+
+                {/* 전체 합계 */}
+                {breakdown.length > 1 && (
+                  <div style={{ marginTop: 6, paddingTop: 10, borderTop: `2px solid ${C.line}`,
+                    display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 17, fontWeight: 800 }}>합계</span>
+                    <span style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 16, color: C.sub }}>
+                      {breakdown.map((w) => fmtN(w.total)).join(" + ")} = <b style={{ color: C.honeyDark, fontSize: 19 }}>{fmtHours(breakdownTotal)}</b>
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </>

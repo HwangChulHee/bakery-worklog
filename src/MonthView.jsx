@@ -20,19 +20,21 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
   return (
     <>
       {/* 월 이동 헤더 */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isCurrent ? 14 : 8 }}>
         <button onClick={() => onShiftMonth(-1)} style={navBtn}>◀</button>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 14, color: C.sub, letterSpacing: 1 }}>{year}년</div>
           <div style={{ fontSize: 28, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 7 }}>
             <span style={{ fontSize: 26, lineHeight: 1 }}>📅</span>{month + 1}월 근무
           </div>
-          {!isCurrent && (
-            <button onClick={onToday} style={todayBtn}>오늘</button>
-          )}
         </div>
         <button onClick={() => onShiftMonth(1)} style={navBtn}>▶</button>
       </div>
+      {!isCurrent && (
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+          <button onClick={onToday} style={todayBtn}>📍 오늘로</button>
+        </div>
+      )}
 
       {/* 월 총합 */}
       <div style={{ background: `linear-gradient(135deg, ${C.honey}, ${C.honeyDark})`, color: "#fff",

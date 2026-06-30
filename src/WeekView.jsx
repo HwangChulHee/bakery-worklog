@@ -10,7 +10,7 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
   return (
     <>
       {/* 주 이동 헤더 */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isCurrent ? 14 : 8 }}>
         <button onClick={() => onShiftWeek(-1)} style={navBtn}>◀</button>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 15, color: C.sub, letterSpacing: 1, display: "inline-flex", alignItems: "center", gap: 5, justifyContent: "center" }}>
@@ -19,12 +19,14 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
           <div style={{ fontSize: 24, fontWeight: 800 }}>
             {weekDays[0].getMonth() + 1}/{weekDays[0].getDate()} ~ {weekDays[6].getMonth() + 1}/{weekDays[6].getDate()}
           </div>
-          {!isCurrent && (
-            <button onClick={onToday} style={todayBtn}>오늘</button>
-          )}
         </div>
         <button onClick={() => onShiftWeek(1)} style={navBtn}>▶</button>
       </div>
+      {!isCurrent && (
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+          <button onClick={onToday} style={todayBtn}>📍 오늘로</button>
+        </div>
+      )}
 
       {/* 주 총합 */}
       <div style={{ background: `linear-gradient(135deg, ${C.honey}, ${C.honeyDark})`, color: "#fff",

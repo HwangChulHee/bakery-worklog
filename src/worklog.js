@@ -33,20 +33,24 @@ export function monthTotal(entries, year, month) {
   );
 }
 
-// 주차별 계산용: 일한 날들의 시간 배열 + 합계 (휴무/빈날 제외, 기록 있는 주만)
+// 주차별 계산용(검산): 일한 날 상세 + 그 주의 휴무(메모 포함) + 합계.
+// 일한 날이 있는 주만 포함. days=근무한 날, offs=휴무한 날, hrs=시간 배열.
 export function weeklyBreakdown(entries, year, month) {
   return getWeeks(year, month)
     .map((week) => {
-      const hrs = [];
+      const days = [], offs = [];
       week.forEach((d) => {
         if (!d) return;
         const e = entries[keyOf(year, month, d)];
-        if (e && e.start) hrs.push(hoursOf(e));
+        if (!e) return;
+        const dow = DOW[new Date(year, month, d).getDay()];
+        if (e.off) offs.push({ d, dow, memo: e.memo || "" });
+        else if (e.start) days.push({ d, dow, hours: hoursOf(e), memo: e.memo || "" });
       });
-      return hrs;
+      const total = days.reduce((a, b) => a + b.hours, 0);
+      return { days, offs, total, hrs: days.map((x) => x.hours) };
     })
-    .filter((hrs) => hrs.length > 0)
-    .map((hrs) => ({ hrs, total: hrs.reduce((a, b) => a + b, 0) }));
+    .filter((w) => w.days.length > 0);
 }
 
 // 어머니 형식 정리본 텍스트 (제목/주차/총합 사이 빈 줄)
