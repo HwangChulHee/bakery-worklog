@@ -347,7 +347,7 @@ export default function App() {
 
       {editing != null && (
         <EditorSheet editing={editing} draft={draft} setDraft={setDraft}
-          draftHours={hoursOf(draft)} hasEntry={!!entries[editKey]}
+          draftHours={hoursOf(draft)} entry={entries[editKey] || null}
           onSave={save} onMarkOff={markOff} onRemove={removeDay} onClose={() => setEditing(null)} />
       )}
 

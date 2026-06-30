@@ -112,7 +112,7 @@ describe("근무 입력 흐름", () => {
     // 6/2 (화) 클릭 → 시트 열림
     fireEvent.click(screen.getByRole("button", { name: "6월 2일" }));
     // 기본 08:30~13:30 = 5h 로 저장
-    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    fireEvent.click(screen.getByRole("button", { name: /저장/ }));
 
     expect(document.body.textContent).toContain("6/2(화) 8:30~1:30(5h)");
     expect(document.body.textContent).toContain("총근무시간(5h)");
@@ -123,13 +123,25 @@ describe("근무 입력 흐름", () => {
   it("휴무로 표시하면 달력에 '휴무'가 뜨고 정리본/합계에서 제외된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "6월 2일" }));
-    fireEvent.click(screen.getByRole("button", { name: "휴무" }));
+    fireEvent.click(screen.getByRole("button", { name: /휴무/ }));
     // 시트가 닫히고 달력 셀에 '휴무' 표시
     expect(screen.getByText("휴무")).toBeInTheDocument();
     // 정리본에는 안 나옴
     expect(document.body.textContent).not.toContain("6/2(화)");
     // localStorage 에 off 로 저장
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-2"]).toEqual({ off: true });
+  });
+
+  it("삭제 누르면 확인 창에 대상 정보가 뜨고, 취소하면 유지된다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-2": { start: "08:30", end: "13:30" } }));
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^6월 2일/ }));
+    fireEvent.click(screen.getByRole("button", { name: /삭제/ }));
+    expect(screen.getByText("이 기록을 삭제할까요?")).toBeInTheDocument();
+    expect(screen.getByText("8:30~1:30 (5h)")).toBeInTheDocument(); // 삭제 대상 정보
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+    expect(screen.queryByText("이 기록을 삭제할까요?")).not.toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem("entries"))["2026-6-2"]).toBeTruthy();
   });
 
   it("기록 지우기로 휴무/근무 기록을 완전히 삭제한다", () => {
@@ -140,7 +152,8 @@ describe("근무 입력 흐름", () => {
     renderApp();
     expect(screen.getByText("휴무")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /^6월 2일/ })); // aria-label "6월 2일 휴무"
-    fireEvent.click(screen.getByRole("button", { name: "기록 지우기" }));
+    fireEvent.click(screen.getByRole("button", { name: /삭제/ })); // 작은 삭제 버튼
+    fireEvent.click(screen.getByRole("button", { name: "삭제" })); // 확인 다이얼로그
     expect(screen.queryByText("휴무")).not.toBeInTheDocument();
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-2"]).toBeUndefined();
   });
@@ -150,7 +163,7 @@ describe("근무 입력 흐름", () => {
     fireEvent.click(screen.getByRole("button", { name: "6월 4일" })); // 목
     fireEvent.change(screen.getByLabelText("출근 시"), { target: { value: "9" } });
     fireEvent.change(screen.getByLabelText("출근 분"), { target: { value: "0" } });
-    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    fireEvent.click(screen.getByRole("button", { name: /저장/ }));
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-4"].start).toBe("09:00");
   });
 
@@ -158,7 +171,7 @@ describe("근무 입력 흐름", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "6월 16일" })); // 이번 주(화)
     fireEvent.change(screen.getByPlaceholderText("메모 (선택)"), { target: { value: "재고 정리" } });
-    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    fireEvent.click(screen.getByRole("button", { name: /저장/ }));
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-16"].memo).toBe("재고 정리");
     fireEvent.click(screen.getByRole("button", { name: "주간" }));
     expect(document.body.textContent).toContain("재고 정리");
@@ -170,7 +183,7 @@ describe("근무 입력 흐름", () => {
     // 시트의 시간 입력칸: [0]=출근, [1]=퇴근
     const timeInputs = document.querySelectorAll('input[type="time"]');
     fireEvent.change(timeInputs[1], { target: { value: "14:00" } });
-    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    fireEvent.click(screen.getByRole("button", { name: /저장/ }));
     expect(document.body.textContent).toContain("6/3(수) 8:30~2:00(5.5h)");
   });
 });
@@ -242,7 +255,8 @@ describe("UX: 공유 / 되돌리기 / 오늘", () => {
     localStorage.setItem("entries", JSON.stringify({ "2026-6-2": { start: "08:30", end: "13:30" } }));
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: /^6월 2일/ }));
-    fireEvent.click(screen.getByRole("button", { name: "기록 지우기" }));
+    fireEvent.click(screen.getByRole("button", { name: /삭제/ })); // 작은 삭제 버튼
+    fireEvent.click(screen.getByRole("button", { name: "삭제" })); // 확인 다이얼로그
     expect(document.body.textContent).not.toContain("6/2(화)");
     fireEvent.click(screen.getByRole("button", { name: "되돌리기" }));
     expect(document.body.textContent).toContain("6/2(화) 8:30~1:30(5h)");
@@ -271,7 +285,7 @@ describe("주간 보기", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "주간" }));
     fireEvent.click(screen.getByRole("button", { name: "6월 16일" })); // 6/16(화)
-    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    fireEvent.click(screen.getByRole("button", { name: /저장/ }));
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-16"]).toEqual({ start: "08:30", end: "13:30" });
   });
 });
@@ -297,9 +311,9 @@ describe("뒤로가기(Android)", () => {
   it("입력 시트에서 뒤로가기 누르면 시트가 닫힌다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "6월 2일" }));
-    expect(screen.getByRole("button", { name: "저장" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /저장/ })).toBeInTheDocument();
     act(() => { window.dispatchEvent(new PopStateEvent("popstate")); });
-    expect(screen.queryByRole("button", { name: "저장" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /저장/ })).not.toBeInTheDocument();
     expect(screen.getByText("정리본")).toBeInTheDocument();
   });
 });
