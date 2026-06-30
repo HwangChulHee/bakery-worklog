@@ -9,7 +9,7 @@ const COLS = "0.78fr repeat(5, 1fr) 0.78fr";
 // 칸 안의 공휴일/메모 밴드 (여백 없이 꽉 채움 + 흰 글씨, 왼쪽 정렬)
 const band = {
   width: "100%", boxSizing: "border-box", textAlign: "left", color: "#fff",
-  fontSize: 9.5, fontWeight: 700, lineHeight: 1.3, padding: "1px 4px",
+  fontSize: 8.5, fontWeight: 700, lineHeight: 1.3, padding: "1px 3px",
   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
 };
 

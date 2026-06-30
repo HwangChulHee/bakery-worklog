@@ -13,8 +13,8 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <button onClick={() => onShiftWeek(-1)} style={navBtn}>◀</button>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 14, color: C.sub, letterSpacing: 1 }}>주간</div>
-          <div style={{ fontSize: 22, fontWeight: 800 }}>
+          <div style={{ fontSize: 15, color: C.sub, letterSpacing: 1 }}>주간</div>
+          <div style={{ fontSize: 24, fontWeight: 800 }}>
             {weekDays[0].getMonth() + 1}/{weekDays[0].getDate()} ~ {weekDays[6].getMonth() + 1}/{weekDays[6].getDate()}
           </div>
           {!isCurrent && (
@@ -27,8 +27,8 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
       {/* 주 총합 */}
       <div style={{ background: C.ink, color: "#fff", borderRadius: 16, padding: "14px 18px",
         display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
-        <span style={{ fontSize: 15, opacity: 0.8 }}>이번 주 총 근무</span>
-        <span style={{ fontSize: 30, fontWeight: 800 }}>{fmtHours(weekTotal)}</span>
+        <span style={{ fontSize: 16, opacity: 0.8 }}>이번 주 총 근무</span>
+        <span style={{ fontSize: 32, fontWeight: 800 }}>{fmtHours(weekTotal)}</span>
       </div>
 
       {/* 요일별 리스트 */}
@@ -49,15 +49,15 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
               border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
               background: isOff ? C.offBg : e ? C.workBg : C.card }}>
               <span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
-                <span style={{ fontSize: 17, fontWeight: 800, color: dateColor }}>{m + 1}/{d} ({DOW[dow]})</span>
-                {hol && <span style={{ fontSize: 13, fontWeight: 700, color: C.sun }}>{hol}</span>}
+                <span style={{ fontSize: 19, fontWeight: 800, color: dateColor }}>{m + 1}/{d} ({DOW[dow]})</span>
+                {hol && <span style={{ fontSize: 14, fontWeight: 700, color: C.sun }}>{hol}</span>}
                 {e && e.memo && (
-                  <span style={{ fontSize: 13, color: C.sub, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ fontSize: 14, color: C.note, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     📝 {e.memo}
                   </span>
                 )}
               </span>
-              <span style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap",
+              <span style={{ fontSize: 19, fontWeight: 800, whiteSpace: "nowrap",
                 color: isOff ? C.off : e ? C.honeyDark : C.line }}>
                 {isOff ? "휴무" : e ? `${fmtClock(e.start)}~${fmtClock(e.end)} · ${fmtHours(hoursOf(e))}` : "—"}
               </span>

@@ -28,11 +28,6 @@ export default function TimeField({ label, value, onChange }) {
           {mins.map((x) => <option key={x} value={x}>{pad(x)}분</option>)}
         </select>
       </div>
-      <input type="time" aria-label={`${label} 직접 입력`} value={value}
-        onChange={(e) => e.target.value && onChange(e.target.value)}
-        style={{ width: "100%", boxSizing: "border-box", marginTop: 8,
-          border: `1px dashed ${C.line}`, borderRadius: 10, padding: "10px 10px",
-          fontSize: 16, color: C.sub, background: C.bg }} />
     </div>
   );
 }

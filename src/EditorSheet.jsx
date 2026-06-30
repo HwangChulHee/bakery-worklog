@@ -19,35 +19,40 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, entr
         background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
         <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, width: "100%", maxWidth: 460,
           borderRadius: "20px 20px 0 0", padding: "20px 18px 26px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+
+          {/* 헤더: 날짜 + (삭제) */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <span style={{ fontSize: 24, fontWeight: 800 }}>{dateLabel}</span>
-            <span style={{ fontSize: 26, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
+            {hasEntry && (
+              <button onClick={() => setConfirming(true)} aria-label="기록 삭제" style={{
+                width: 42, height: 42, borderRadius: 12, cursor: "pointer", fontSize: 18,
+                color: C.sun, background: "#FCEBE9", border: "1px solid #F2C9C4" }}>
+                🗑️
+              </button>
+            )}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 14 }}>
+          {/* 일한 시간 크게 */}
+          <div style={{ background: C.workBg, borderRadius: 14, padding: "12px 0", textAlign: "center", marginBottom: 16 }}>
+            <span style={{ fontSize: 16, color: C.honeyDark, fontWeight: 700 }}>근무 </span>
+            <span style={{ fontSize: 32, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
+          </div>
+
+          {/* 시간 선택 */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 16 }}>
             <TimeField label="출근" value={draft.start} onChange={(v) => setDraft({ ...draft, start: v })} />
             <TimeField label="퇴근" value={draft.end} onChange={(v) => setDraft({ ...draft, end: v })} />
           </div>
 
+          {/* 메모 */}
           <div style={{ fontSize: 14, color: C.note, fontWeight: 700, marginBottom: 6 }}>메모</div>
           <textarea value={draft.memo} onChange={(e) => setDraft({ ...draft, memo: e.target.value })}
             placeholder="메모 (선택)" rows={2}
-            style={{ width: "100%", boxSizing: "border-box", marginBottom: 16, resize: "none",
+            style={{ width: "100%", boxSizing: "border-box", marginBottom: 18, resize: "none",
               border: `1px solid ${C.note}`, borderRadius: 12, padding: "12px 12px",
               fontSize: 18, color: C.ink, background: C.noteBg, fontFamily: "inherit", outline: "none" }} />
 
-          {/* 삭제는 위쪽에 작게 (저장 오터치 방지) */}
-          {hasEntry && (
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
-              <button onClick={() => setConfirming(true)} style={{
-                padding: "8px 14px", borderRadius: 10, cursor: "pointer", fontSize: 15, fontWeight: 800,
-                color: C.sun, background: "#FCEBE9", border: "1px solid #F2C9C4" }}>
-                🗑️ 삭제
-              </button>
-            </div>
-          )}
-
-          {/* 주요 동작 (맨 아래) */}
+          {/* 주요 동작 */}
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={onMarkOff} style={{ ...ghostBtn, flex: 1 }}>🛌 휴무</button>
             <button onClick={onSave} style={{ ...primaryBtn, flex: 2, padding: "15px 0", fontSize: 18 }}>💾 저장</button>

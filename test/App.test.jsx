@@ -82,9 +82,8 @@ describe("탭 전환 / 설정", () => {
   it("기본 출근/퇴근시간 변경이 localStorage 에 저장된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
-    // 설정 화면의 time input 두 개 (출근/퇴근)
-    const start = document.querySelector('input[type="time"]');
-    fireEvent.change(start, { target: { value: "09:00" } });
+    fireEvent.change(screen.getByLabelText("기본 출근시간 시"), { target: { value: "9" } });
+    fireEvent.change(screen.getByLabelText("기본 출근시간 분"), { target: { value: "0" } });
     expect(JSON.parse(localStorage.getItem("defaultStart"))).toBe("09:00");
   });
 });
@@ -180,9 +179,8 @@ describe("근무 입력 흐름", () => {
   it("퇴근시간을 바꿔 저장하면 반영된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: /^6월 3일/ })); // 6/3(수), 지방선거일이어도 입력 가능
-    // 시트의 시간 입력칸: [0]=출근, [1]=퇴근
-    const timeInputs = document.querySelectorAll('input[type="time"]');
-    fireEvent.change(timeInputs[1], { target: { value: "14:00" } });
+    fireEvent.change(screen.getByLabelText("퇴근 시"), { target: { value: "14" } });
+    fireEvent.change(screen.getByLabelText("퇴근 분"), { target: { value: "0" } });
     fireEvent.click(screen.getByRole("button", { name: /저장/ }));
     expect(document.body.textContent).toContain("6/3(수) 8:30~2:00(5.5h)");
   });
