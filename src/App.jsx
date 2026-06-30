@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { restoreFromCloud } from "./cloud";
 import { C, FONT, iconBtn, primaryBtn, ghostBtn } from "./theme";
-import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary } from "./worklog";
-import { hoursOf } from "./time";
+import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary, weeklyBreakdown } from "./worklog";
+import { hoursOf, fmtHours } from "./time";
 import { useLocalStorage } from "./useLocalStorage";
 import { useDailyBackup } from "./useDailyBackup";
 import LoginScreen from "./LoginScreen";
@@ -226,6 +226,9 @@ export default function App() {
   }, []);
 
   const buildText = () => buildSummary({ entries, year, month, account });
+  const breakdown = weeklyBreakdown(entries, year, month);
+  const breakdownTotal = breakdown.reduce((s, w) => s + w.total, 0);
+  const fmtN = (h) => (Number.isInteger(h) ? `${h}` : h.toFixed(1));
   const copyText = async () => {
     try {
       await navigator.clipboard.writeText(buildText());
@@ -289,6 +292,27 @@ export default function App() {
               )}
             </div>
 
+            {/* 주차별 계산 */}
+            {breakdown.length > 0 && (
+              <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
+                <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 10 }}>주차별 계산</div>
+                <div style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 14, lineHeight: 1.9, color: C.ink }}>
+                  {breakdown.map((w, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8 }}>
+                      <span style={{ color: C.sub, fontWeight: 700, flexShrink: 0 }}>{i + 1}주</span>
+                      <span>{w.hrs.map(fmtN).join(" + ")} = <b style={{ color: C.honeyDark }}>{fmtHours(w.total)}</b></span>
+                    </div>
+                  ))}
+                  {breakdown.length > 1 && (
+                    <div style={{ display: "flex", gap: 8, marginTop: 6, paddingTop: 6, borderTop: `1px dashed ${C.line}` }}>
+                      <span style={{ color: C.sub, fontWeight: 700, flexShrink: 0 }}>합계</span>
+                      <span>{breakdown.map((w) => fmtN(w.total)).join(" + ")} = <b style={{ color: C.honeyDark }}>{fmtHours(breakdownTotal)}</b></span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* 정리본 */}
             <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -300,7 +324,7 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 13.5, lineHeight: 1.7,
+              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 16, lineHeight: 1.7,
                 fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
                 background: C.bg, borderRadius: 10, padding: 14, border: `1px dashed ${C.line}` }}>
                 {buildText()}

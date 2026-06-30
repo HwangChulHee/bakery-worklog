@@ -33,6 +33,22 @@ export function monthTotal(entries, year, month) {
   );
 }
 
+// 주차별 계산용: 일한 날들의 시간 배열 + 합계 (휴무/빈날 제외, 기록 있는 주만)
+export function weeklyBreakdown(entries, year, month) {
+  return getWeeks(year, month)
+    .map((week) => {
+      const hrs = [];
+      week.forEach((d) => {
+        if (!d) return;
+        const e = entries[keyOf(year, month, d)];
+        if (e && e.start) hrs.push(hoursOf(e));
+      });
+      return hrs;
+    })
+    .filter((hrs) => hrs.length > 0)
+    .map((hrs) => ({ hrs, total: hrs.reduce((a, b) => a + b, 0) }));
+}
+
 // 어머니 형식 정리본 텍스트
 export function buildSummary({ entries, year, month, account }) {
   const weeks = getWeeks(year, month);

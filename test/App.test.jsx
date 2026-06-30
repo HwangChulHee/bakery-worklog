@@ -191,6 +191,18 @@ describe("localStorage 자동복원", () => {
   });
 });
 
+describe("주차별 계산", () => {
+  it("정리본 위에 주차별 수식이 표시된다", () => {
+    localStorage.setItem("entries", JSON.stringify({
+      "2026-6-1": { start: "08:30", end: "13:30" },
+      "2026-6-2": { start: "08:30", end: "13:00" },
+    }));
+    renderApp();
+    expect(screen.getByText("주차별 계산")).toBeInTheDocument();
+    expect(document.body.textContent).toContain("5 + 4.5 = 9.5h");
+  });
+});
+
 describe("복사하기", () => {
   it("정리본 텍스트를 클립보드에 쓴다", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
