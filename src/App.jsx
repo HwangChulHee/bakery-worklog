@@ -299,8 +299,8 @@ export default function App() {
             {/* 정리본 */}
             <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={{ fontWeight: 800, fontSize: 17, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 18, lineHeight: 1 }}>📋</span>정리본
+                <span style={{ fontWeight: 800, fontSize: 22, display: "inline-flex", alignItems: "center", gap: 7 }}>
+                  <span style={{ fontSize: 22, lineHeight: 1 }}>📋</span>정리본
                 </span>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={shareText} style={{ ...primaryBtn, padding: "12px 22px", fontSize: 17 }}>공유</button>
@@ -319,8 +319,8 @@ export default function App() {
             {/* 주차별 계산 (검산) */}
             {breakdown.length > 0 && (
               <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
-                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 19, lineHeight: 1 }}>🧮</span>주차별 계산
+                <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 14, display: "flex", alignItems: "center", gap: 7 }}>
+                  <span style={{ fontSize: 23, lineHeight: 1 }}>🧮</span>주차별 계산
                 </div>
 
                 {breakdown.map((w, i) => {
@@ -351,12 +351,15 @@ export default function App() {
                             </span>
                             <span style={{ fontSize: isMiss ? 18 : 22, fontWeight: 800,
                               color: isMiss ? C.sun : isOffRow ? C.off : C.honeyDark }}>
-                              {isMiss ? "⚠️ 입력안함" : isOffRow ? "휴무" : `${fmtN(r.hours)}h`}
+                              {isMiss ? "⚠️ 입력안함" : isOffRow ? "🛌 휴무" : `🍞 ${fmtN(r.hours)}h`}
                             </span>
                           </div>
                           {r.memo && (
-                            <div style={{ marginTop: 4, fontSize: 17, fontWeight: 600, color: C.note,
-                              lineHeight: 1.4 }}>{r.memo}</div>
+                            <div style={{ marginTop: 7, display: "inline-flex", alignItems: "center", gap: 6,
+                              background: C.noteBg, border: `1px solid ${C.note}`, borderRadius: 8,
+                              padding: "6px 12px", fontSize: 17, fontWeight: 700, color: C.note, lineHeight: 1.4 }}>
+                              <span style={{ fontSize: 15, lineHeight: 1 }}>📝</span>{r.memo}
+                            </div>
                           )}
                         </div>
                         );

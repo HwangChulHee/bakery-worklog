@@ -53,7 +53,7 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
               width: "100%", boxSizing: "border-box", display: "flex", alignItems: "center",
               justifyContent: "space-between", gap: 8, padding: "14px 12px", marginBottom: 4,
               borderRadius: 12, cursor: "pointer", textAlign: "left",
-              border: isToday ? `2px solid ${C.honey}` : isOff ? `2px solid ${C.off}` : `1px solid ${C.line}`,
+              border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
               background: isOff ? C.offBg : e ? C.workBg : C.card }}>
               <span style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
                 <span style={{ fontSize: 23, fontWeight: 800, color: dateColor }}>{m + 1}/{d} ({DOW[dow]})</span>
