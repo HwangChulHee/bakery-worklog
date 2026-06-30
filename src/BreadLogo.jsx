@@ -1,32 +1,17 @@
-// 귀여운 빵 로고 (스플래시 / 로그인 화면 공용)
+// 식빵 로고 (스플래시 / 로그인 화면 / 파비콘 / 앱 아이콘 공용)
 export default function BreadLogo({ size = 120 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"
-      role="img" aria-label="빵">
+      role="img" aria-label="식빵">
       {/* 바닥 그림자 */}
-      <ellipse cx="60" cy="103" rx="33" ry="6" fill="#00000012" />
-
-      {/* 빵 몸통 */}
-      <path d="M20 72 Q20 36 60 36 Q100 36 100 72 L100 80 Q100 92 88 92 L32 92 Q20 92 20 80 Z"
-        fill="#CC8A3C" />
-      {/* 부드러운 윗면 하이라이트 */}
-      <path d="M27 66 Q30 44 60 44 Q90 44 93 66 Q76 58 60 58 Q44 58 27 66 Z" fill="#E2AB60" />
-      {/* 칼집(스코어) */}
-      <path d="M40 56 Q46 50 52 56" stroke="#B0721E" strokeWidth="3" fill="none" strokeLinecap="round" />
-      <path d="M68 56 Q74 50 80 56" stroke="#B0721E" strokeWidth="3" fill="none" strokeLinecap="round" />
-      {/* 아래 크러스트 */}
-      <rect x="20" y="83" width="80" height="9" rx="4.5" fill="#B0721E" />
-
-      {/* 볼터치 */}
-      <circle cx="40" cy="77" r="4.5" fill="#E68A6A" opacity="0.45" />
-      <circle cx="80" cy="77" r="4.5" fill="#E68A6A" opacity="0.45" />
-      {/* 눈 */}
-      <circle cx="49" cy="70" r="3.8" fill="#3A2A18" />
-      <circle cx="71" cy="70" r="3.8" fill="#3A2A18" />
-      <circle cx="50.2" cy="68.8" r="1.2" fill="#fff" />
-      <circle cx="72.2" cy="68.8" r="1.2" fill="#fff" />
-      {/* 입 */}
-      <path d="M54 78 Q60 84 66 78" stroke="#3A2A18" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <ellipse cx="60" cy="101" rx="38" ry="6" fill="#0000000f" />
+      {/* 식빵 전체(크러스트): 사각 몸통 + 부드러운 윗면 */}
+      <path d="M16 86 L16 60 C16 44 28 38 60 38 C92 38 104 44 104 60 L104 86 Q104 92 98 92 L22 92 Q16 92 16 86 Z"
+        fill="#C9893C" />
+      {/* 아래 속살(밝은 부분) */}
+      <path d="M17 74 C40 68 80 68 103 74 L103 86 Q103 91 98 91 L22 91 Q17 91 17 86 Z" fill="#F2E2BB" />
+      {/* 윗면 하이라이트 */}
+      <path d="M27 58 C31 46 45 42 60 42 C75 42 89 46 93 58 C78 52 42 52 27 58 Z" fill="#DCA75A" />
     </svg>
   );
 }
