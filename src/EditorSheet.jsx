@@ -25,18 +25,19 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, entr
             <span style={{ fontSize: 24, fontWeight: 800 }}>{dateLabel}</span>
             {hasEntry && (
               <button onClick={() => setConfirming(true)} style={{
-                display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 10,
-                cursor: "pointer", fontSize: 15, fontWeight: 800,
+                display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 12,
+                cursor: "pointer", fontSize: 17, fontWeight: 800,
                 color: C.sun, background: "#FCEBE9", border: "1px solid #F2C9C4" }}>
-                🗑️ 삭제
+                <span style={{ lineHeight: 1 }}>🗑️</span><span>삭제</span>
               </button>
             )}
           </div>
 
-          {/* 일한 시간 크게 */}
-          <div style={{ background: C.workBg, borderRadius: 14, padding: "12px 0", textAlign: "center", marginBottom: 16 }}>
-            <div style={{ fontSize: 14, color: C.honeyDark, fontWeight: 700, marginBottom: 2 }}>근무시간</div>
-            <div style={{ fontSize: 34, fontWeight: 800, color: C.honeyDark, lineHeight: 1 }}>{fmtHours(draftHours)}</div>
+          {/* 근무시간 (라벨과 숫자 같은 크기, 한 줄) */}
+          <div style={{ background: C.workBg, borderRadius: 14, padding: "16px 0", marginBottom: 16,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+            <span style={{ fontSize: 24, fontWeight: 700, color: C.honeyDark }}>근무시간</span>
+            <span style={{ fontSize: 24, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
           </div>
 
           {/* 시간 선택 */}
@@ -53,12 +54,16 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, entr
               border: `1px solid ${C.note}`, borderRadius: 12, padding: "12px 12px",
               fontSize: 18, color: C.ink, background: C.noteBg, fontFamily: "inherit", outline: "none" }} />
 
-          {/* 주요 동작 */}
+          {/* 주요 동작 (동일 크기) */}
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={onMarkOff} style={{ ...ghostBtn, flex: 1, fontSize: 18, padding: "15px 0",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>🛌 휴무</button>
-            <button onClick={onSave} style={{ ...primaryBtn, flex: 2, fontSize: 18, padding: "15px 0",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>💾 저장</button>
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <span style={{ lineHeight: 1 }}>🛌</span><span>휴무</span>
+            </button>
+            <button onClick={onSave} style={{ ...primaryBtn, flex: 1, fontSize: 18, padding: "15px 0",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <span style={{ lineHeight: 1 }}>💾</span><span>저장</span>
+            </button>
           </div>
         </div>
       </div>
