@@ -59,29 +59,33 @@ describe("App 기본 렌더", () => {
 });
 
 describe("탭 전환 / 설정", () => {
-  it("설정 탭에서 설정 항목들이 보인다", () => {
+  it("설정 탭에서 카테고리 목록이 보인다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
-    expect(screen.getByText("기본 출근시간")).toBeInTheDocument();
-    expect(screen.getByText("기본 퇴근시간")).toBeInTheDocument();
-    expect(screen.getByText("입금 계좌")).toBeInTheDocument();
-    expect(screen.getByText("공휴일 표시")).toBeInTheDocument();
+    expect(screen.getByText("근무 기본값")).toBeInTheDocument();
+    expect(screen.getByText("정리본")).toBeInTheDocument();
+    expect(screen.getByText("달력 표시")).toBeInTheDocument();
+    expect(screen.getByText("클라우드 백업")).toBeInTheDocument();
+    expect(screen.getByText("계정")).toBeInTheDocument();
   });
 
-  it("계좌 변경이 localStorage 와 정리본에 반영된다", () => {
+  it("정리본 카테고리에서 계좌 변경이 localStorage 와 정리본에 반영된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "정리본" })); // 카테고리 진입
     const input = screen.getByPlaceholderText("입금 계좌");
     fireEvent.change(input, { target: { value: "카카오뱅크(99988)" } });
     expect(JSON.parse(localStorage.getItem("account"))).toBe("카카오뱅크(99988)");
-    // 달력으로 돌아가 정리본 확인
+    // 리스트 → 달력으로 돌아가 정리본 확인
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
     fireEvent.click(screen.getByRole("button", { name: "달력" }));
     expect(document.body.textContent).toContain("==>카카오뱅크(99988)");
   });
 
-  it("요일별 기본 출근시간 변경이 localStorage(dayDefaults)에 저장된다", () => {
+  it("근무 기본값 카테고리에서 요일별 기본 출근시간이 저장된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "근무 기본값" }));
     // 기본 선택 요일은 월(1)
     fireEvent.change(screen.getByLabelText("기본 출근시간 시"), { target: { value: "9" } });
     fireEvent.change(screen.getByLabelText("기본 출근시간 분"), { target: { value: "0" } });
@@ -91,6 +95,7 @@ describe("탭 전환 / 설정", () => {
   it("요일 탭을 바꾸면 그 요일의 기본값만 바뀐다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "근무 기본값" }));
     fireEvent.click(screen.getByRole("button", { name: "수요일 기본값" })); // 수(3) 선택
     fireEvent.change(screen.getByLabelText("기본 퇴근시간 시"), { target: { value: "15" } });
     fireEvent.change(screen.getByLabelText("기본 퇴근시간 분"), { target: { value: "0" } });
@@ -109,10 +114,12 @@ describe("공휴일 표시", () => {
   it("공휴일 표시를 끄면 사라지고 localStorage 에 저장된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "달력 표시" })); // 카테고리 진입
     const toggle = screen.getByText("공휴일 표시").parentElement.querySelector("button");
     fireEvent.click(toggle);
     expect(JSON.parse(localStorage.getItem("showHolidays"))).toBe(false);
-    fireEvent.click(screen.getByRole("button", { name: "달력" }));
+    fireEvent.click(screen.getByRole("button", { name: "설정" })); // 리스트로
+    fireEvent.click(screen.getByRole("button", { name: "달력" })); // 달력으로
     expect(screen.queryByText("현충일")).not.toBeInTheDocument();
   });
 });
@@ -320,10 +327,10 @@ describe("뒤로가기(Android)", () => {
   it("설정에서 뒤로가기 누르면 달력으로 돌아온다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
-    expect(screen.getByText("기본 출근시간")).toBeInTheDocument();
+    expect(screen.getByText("근무 기본값")).toBeInTheDocument();
     act(() => { window.dispatchEvent(new PopStateEvent("popstate")); });
     expect(screen.getByText("정리본")).toBeInTheDocument();
-    expect(screen.queryByText("기본 출근시간")).not.toBeInTheDocument();
+    expect(screen.queryByText("근무 기본값")).not.toBeInTheDocument();
   });
 
   it("달력 홈에서 뒤로가기 한 번 → 종료 안내가 뜬다", () => {
@@ -506,6 +513,7 @@ describe("클라우드 백업 / 로그아웃", () => {
 
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "클라우드 백업" }));
     fireEvent.click(screen.getByRole("button", { name: "지금 백업" }));
 
     expect(await screen.findByText("백업 완료 ✓")).toBeInTheDocument();
@@ -522,10 +530,12 @@ describe("클라우드 백업 / 로그아웃", () => {
 
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "클라우드 백업" }));
     fireEvent.click(screen.getByRole("button", { name: "복구" }));
 
     expect(await screen.findByText("복구 완료 ✓")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "달력" }));
+    fireEvent.click(screen.getByRole("button", { name: "설정" })); // 리스트로
+    fireEvent.click(screen.getByRole("button", { name: "달력" })); // 달력으로
     expect(document.body.textContent).toContain("6/2(화)");
     expect(document.body.textContent).toContain("복구은행(1)");
   });
@@ -533,6 +543,7 @@ describe("클라우드 백업 / 로그아웃", () => {
   it("로그아웃하면 로그인 화면으로 돌아간다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "계정" }));
     fireEvent.click(screen.getByRole("button", { name: "로그아웃" }));
     expect(screen.getByPlaceholderText("이름")).toBeInTheDocument();
     expect(screen.queryByText("정리본")).not.toBeInTheDocument();
