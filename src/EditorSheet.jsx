@@ -27,9 +27,14 @@ export default function EditorSheet({ editing, draft, setDraft, mode, setMode, d
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 20,
-        background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+        background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
         <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, width: "100%", maxWidth: 460,
-          borderRadius: "20px 20px 0 0", padding: "20px 18px 26px" }}>
+          borderRadius: "20px 20px 0 0", padding: "12px 18px 26px", boxSizing: "border-box",
+          maxHeight: "82vh", overflowY: "auto" }}>
+
+          {/* 잡이(위 빈 곳을 누르면 닫힘) */}
+          <div onClick={onClose} style={{ width: 44, height: 5, borderRadius: 3, background: C.line,
+            margin: "0 auto 14px", cursor: "pointer" }} />
 
           {/* 헤더: 날짜 + (기록 지우기) */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>

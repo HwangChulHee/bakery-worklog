@@ -51,26 +51,26 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
             <button key={`${y}-${m}-${d}`} onClick={() => onOpenDay(y, m, d)}
               aria-label={`${m + 1}월 ${d}일${isOff ? " 휴무" : ""}`} style={{
               width: "100%", boxSizing: "border-box", display: "flex", alignItems: "center",
-              justifyContent: "space-between", gap: 8, padding: "12px 12px", marginBottom: 4,
+              justifyContent: "space-between", gap: 8, padding: "14px 12px", marginBottom: 4,
               borderRadius: 12, cursor: "pointer", textAlign: "left",
               border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
               background: isOff ? C.offBg : e ? C.workBg : C.card }}>
-              <span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
-                <span style={{ fontSize: 19, fontWeight: 800, color: dateColor }}>{m + 1}/{d} ({DOW[dow]})</span>
-                {hol && <span style={{ fontSize: 14, fontWeight: 700, color: C.sun }}>{hol}</span>}
+              <span style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+                <span style={{ fontSize: 23, fontWeight: 800, color: dateColor }}>{m + 1}/{d} ({DOW[dow]})</span>
+                {hol && <span style={{ fontSize: 16, fontWeight: 700, color: C.sun }}>{hol}</span>}
                 {e && e.memo && (
-                  <span style={{ fontSize: 14, color: C.note, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ fontSize: 16, color: C.note, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     📝 {e.memo}
                   </span>
                 )}
               </span>
-              <span style={{ fontSize: 19, fontWeight: 800, whiteSpace: "nowrap",
-                display: "inline-flex", alignItems: "center", gap: 3,
+              <span style={{ fontSize: 22, fontWeight: 800, whiteSpace: "nowrap",
+                display: "inline-flex", alignItems: "center", gap: 4,
                 color: isOff ? C.off : e ? C.honeyDark : C.line }}>
                 {isOff
-                  ? <><span style={{ fontSize: 13, lineHeight: 1 }}>🛌</span>휴무</>
+                  ? <><span style={{ fontSize: 15, lineHeight: 1 }}>🛌</span>휴무</>
                   : e
-                    ? <><span style={{ fontSize: 13, lineHeight: 1 }}>🍞</span>{`${fmtClock(e.start)}~${fmtClock(e.end)} · ${fmtHours(hoursOf(e))}`}</>
+                    ? <><span style={{ fontSize: 15, lineHeight: 1 }}>🍞</span>{`${fmtClock(e.start)}~${fmtClock(e.end)} · ${fmtHours(hoursOf(e))}`}</>
                     : "—"}
               </span>
             </button>
