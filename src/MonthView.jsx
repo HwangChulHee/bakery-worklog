@@ -3,11 +3,14 @@ import { fmtHours, hoursOf } from "./time";
 import { holidayName } from "./holidays";
 import { C, navBtn, todayBtn } from "./theme";
 
-// 칸 안의 공휴일/메모 칩 (왼쪽 정렬 + 배경/테두리 강조)
-const chip = {
-  textAlign: "left", fontSize: 9, fontWeight: 700, lineHeight: 1.25,
-  borderRadius: 4, padding: "1px 4px", boxSizing: "border-box",
-  maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+// 일요일 좁게, 토요일 살짝 좁게 → 평일 칸 넓힘
+const COLS = "0.78fr repeat(5, 1fr) 0.9fr";
+
+// 칸 안의 공휴일/메모 밴드 (여백 없이 꽉 채움 + 흰 글씨, 왼쪽 정렬)
+const band = {
+  width: "100%", boxSizing: "border-box", textAlign: "left", color: "#fff",
+  fontSize: 9, fontWeight: 700, lineHeight: 1.35, padding: "1px 4px",
+  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
 };
 
 // 월간 달력 보기
@@ -38,7 +41,7 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
 
       {/* 달력 */}
       <div style={{ background: C.card, borderRadius: 16, padding: 12, border: `1px solid ${C.line}`, marginBottom: 16 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
+        <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 4, marginBottom: 6 }}>
           {DOW.map((d, i) => (
             <div key={d} style={{ textAlign: "center", fontSize: 12, fontWeight: 700, padding: "4px 0",
               color: i === 0 ? C.sun : i === 6 ? C.sat : C.sub }}>{d}</div>
@@ -47,7 +50,7 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
 
         {weeks.map((week, wi) => {
           return (
-            <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+            <div key={wi} style={{ display: "grid", gridTemplateColumns: COLS, gap: 4, marginBottom: 4 }}>
               {week.map((d, di) => {
                 if (!d) return <div key={di} />;
                 const e = entries[keyOf(d)];
@@ -60,18 +63,14 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                     aria-label={`${month + 1}월 ${d}일${isOff ? " 휴무" : ""}${hol ? ` ${hol}` : ""}`} style={{
                     minHeight: 68, borderRadius: 10, cursor: "pointer", overflow: "hidden",
                     border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
-                    background: isOff ? C.offBg : e ? C.workBg : C.card, padding: "4px 3px",
+                    background: isOff ? C.offBg : e ? C.workBg : C.card, padding: "4px 0 3px",
                     display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: "flex-start", gap: 2 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: dayColor, textAlign: "center" }}>{d}</span>
+                    {hol && <span style={{ ...band, background: C.sun }}>{hol}</span>}
+                    {e && e.memo && <span style={{ ...band, background: C.honey }}>{e.memo}</span>}
                     {isOff
                       ? <span style={{ fontSize: 11, fontWeight: 800, color: C.off, textAlign: "center" }}>휴무</span>
                       : e && <span style={{ fontSize: 12, fontWeight: 800, color: C.honeyDark, textAlign: "center" }}>{fmtHours(hoursOf(e))}</span>}
-                    {hol && (
-                      <span style={{ ...chip, color: "#fff", background: C.sun }}>{hol}</span>
-                    )}
-                    {e && e.memo && (
-                      <span style={{ ...chip, color: C.honeyDark, background: C.card, border: `1px solid ${C.honey}` }}>{e.memo}</span>
-                    )}
                   </button>
                 );
               })}
