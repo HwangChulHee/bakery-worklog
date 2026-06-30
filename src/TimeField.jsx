@@ -11,13 +11,16 @@ const selStyle = {
   padding: "14px 8px", textAlign: "center", cursor: "pointer",
 };
 
-export default function TimeField({ label, value, onChange, disabled = false }) {
+export default function TimeField({ label, value, onChange, disabled = false, icon }) {
   const [h, m] = value.split(":").map(Number);
   // 직접 입력으로 들어온 5분 단위가 아닌 분도 목록에 보이게
   const mins = MINS.includes(m) ? MINS : [...MINS, m].sort((a, b) => a - b);
   return (
     <div style={{ minWidth: 0, opacity: disabled ? 0.4 : 1 }}>
-      <div style={{ fontSize: 14, color: C.sub, fontWeight: 700, marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 14, color: C.sub, fontWeight: 700, marginBottom: 6,
+        display: "flex", alignItems: "center", gap: 5 }}>
+        {icon && <span style={{ fontSize: 15, lineHeight: 1 }}>{icon}</span>}{label}
+      </div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <select aria-label={`${label} 시`} value={h} style={selStyle} disabled={disabled}
           onChange={(e) => onChange(`${pad(Number(e.target.value))}:${pad(m)}`)}>

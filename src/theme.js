@@ -5,6 +5,7 @@ export const C = {
   workBg: "#FBEFD8", sun: "#C2453B", sat: "#2F6FB0", band: "#EFE5D3",
   offBg: "#ECE5D9", off: "#9A8C78",
   note: "#2F6FB0", noteBg: "#E9F1F9", // 메모(파란 계열) — 시간(허니)과 구분
+  gray: "#6E6E73", grayDark: "#4B4B4F", grayBg: "#F2F1EF", grayLine: "#DDDAD4", // 설정 화면 회색톤
 };
 
 export const FONT =

@@ -108,17 +108,6 @@ export default function App() {
   };
   const goToday = () => setAnchor({ y: now.getFullYear(), m: now.getMonth(), d: now.getDate() });
 
-  // 좌우 스와이프로 월/주 이동
-  const touch = useRef({ x: 0, y: 0 });
-  const onTouchStart = (e) => { const t = e.changedTouches[0]; touch.current = { x: t.clientX, y: t.clientY }; };
-  const onTouchEnd = (e) => {
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touch.current.x, dy = t.clientY - touch.current.y;
-    if (Math.abs(dx) < 50 || Math.abs(dx) <= Math.abs(dy)) return; // 수평 스와이프만
-    const dir = dx < 0 ? 1 : -1;
-    if (view === "month") shiftMonth(dir); else shiftWeek(dir);
-  };
-
   // ── 주간 보기 ──────────────────────────────
   const anchorDate = new Date(anchor.y, anchor.m, anchor.d);
   const weekStart = new Date(anchorDate);
@@ -290,7 +279,7 @@ export default function App() {
               </button>
             </div>
 
-            <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+            <div>
               {view === "month" && (
                 <MonthView year={year} month={month} weeks={weeks} entries={entries}
                   showHolidays={showHolidays} now={now} monthTotal={monthTotal}
