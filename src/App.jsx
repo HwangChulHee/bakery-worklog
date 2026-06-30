@@ -409,7 +409,7 @@ export default function App() {
                   {copied ? "복사됨 ✓" : "복사하기"}
                 </button>
               </div>
-              <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontSize: 13.5, lineHeight: 1.7,
+              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 13.5, lineHeight: 1.7,
                 fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
                 background: C.bg, borderRadius: 10, padding: 14, border: `1px dashed ${C.line}` }}>
                 {buildText()}
