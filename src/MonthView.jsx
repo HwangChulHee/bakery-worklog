@@ -3,6 +3,13 @@ import { fmtHours, hoursOf } from "./time";
 import { holidayName } from "./holidays";
 import { C, navBtn, todayBtn } from "./theme";
 
+// 칸 안의 공휴일/메모 칩 (왼쪽 정렬 + 배경/테두리 강조)
+const chip = {
+  textAlign: "left", fontSize: 9, fontWeight: 700, lineHeight: 1.25,
+  borderRadius: 4, padding: "1px 4px", boxSizing: "border-box",
+  maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+};
+
 // 월간 달력 보기
 export default function MonthView({ year, month, weeks, entries, showHolidays, now, monthTotal, onShiftMonth, onToday, onOpenDay }) {
   const keyOf = (d) => wKeyOf(year, month, d);
@@ -51,25 +58,19 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                 return (
                   <button key={di} onClick={() => onOpenDay(year, month, d)} title={hol || (e && e.memo) || undefined}
                     aria-label={`${month + 1}월 ${d}일${isOff ? " 휴무" : ""}${hol ? ` ${hol}` : ""}`} style={{
-                    minHeight: 64, borderRadius: 10, cursor: "pointer", overflow: "hidden",
+                    minHeight: 68, borderRadius: 10, cursor: "pointer", overflow: "hidden",
                     border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
                     background: isOff ? C.offBg : e ? C.workBg : C.card, padding: "4px 3px",
-                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: dayColor }}>{d}</span>
+                    display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: "flex-start", gap: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: dayColor, textAlign: "center" }}>{d}</span>
                     {isOff
-                      ? <span style={{ fontSize: 11, fontWeight: 800, color: C.off }}>휴무</span>
-                      : e && <span style={{ fontSize: 12, fontWeight: 800, color: C.honeyDark }}>{fmtHours(hoursOf(e))}</span>}
+                      ? <span style={{ fontSize: 11, fontWeight: 800, color: C.off, textAlign: "center" }}>휴무</span>
+                      : e && <span style={{ fontSize: 12, fontWeight: 800, color: C.honeyDark, textAlign: "center" }}>{fmtHours(hoursOf(e))}</span>}
                     {hol && (
-                      <span style={{ fontSize: 9, fontWeight: 700, color: C.sun, lineHeight: 1.1,
-                        maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {hol}
-                      </span>
+                      <span style={{ ...chip, color: "#fff", background: C.sun }}>{hol}</span>
                     )}
                     {e && e.memo && (
-                      <span style={{ fontSize: 9, fontWeight: 600, color: C.sub, lineHeight: 1.1,
-                        maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        📝{e.memo}
-                      </span>
+                      <span style={{ ...chip, color: C.honeyDark, background: C.card, border: `1px solid ${C.honey}` }}>{e.memo}</span>
                     )}
                   </button>
                 );
