@@ -11,8 +11,8 @@ export const FONT =
   "-apple-system, 'Apple SD Gothic Neo', 'Pretendard', system-ui, sans-serif";
 
 // 공용 버튼/입력 스타일
-export const navBtn = { width: 46, height: 46, borderRadius: 12, border: `1px solid ${C.line}`,
-  background: C.card, fontSize: 18, cursor: "pointer", color: C.ink };
+export const navBtn = { width: 54, height: 54, borderRadius: 12, border: `1px solid ${C.line}`,
+  background: C.card, fontSize: 22, cursor: "pointer", color: C.ink };
 export const iconBtn = { width: 42, height: 42, borderRadius: 12, border: `1px solid ${C.line}`,
   background: C.card, fontSize: 20, cursor: "pointer", color: C.ink,
   display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 };
@@ -25,5 +25,5 @@ export const timeBox = { flex: 1, minWidth: 0, display: "flex", flexDirection: "
 export const timeLabel = { fontSize: 13, color: C.sub, fontWeight: 700 };
 export const timeInput = { width: "100%", maxWidth: "100%", boxSizing: "border-box", border: "none",
   background: "transparent", fontSize: 18, fontWeight: 700, color: C.ink, outline: "none" };
-export const todayBtn = { marginTop: 4, padding: "4px 14px", borderRadius: 999, cursor: "pointer",
-  border: `1px solid ${C.honey}`, background: C.workBg, color: C.honeyDark, fontSize: 14, fontWeight: 800 };
+export const todayBtn = { marginTop: 6, padding: "7px 20px", borderRadius: 999, cursor: "pointer",
+  border: `1px solid ${C.honey}`, background: C.workBg, color: C.honeyDark, fontSize: 16, fontWeight: 800 };

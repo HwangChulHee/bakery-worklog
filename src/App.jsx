@@ -278,13 +278,16 @@ export default function App() {
               <div style={{ display: "flex", background: C.card, border: `1px solid ${C.line}`, borderRadius: 10, overflow: "hidden" }}>
                 {[["month", "월간"], ["week", "주간"]].map(([k, label]) => (
                   <button key={k} onClick={() => setView(k)} style={{
-                    padding: "10px 20px", border: "none", cursor: "pointer", fontSize: 16, fontWeight: 800,
+                    padding: "13px 26px", border: "none", cursor: "pointer", fontSize: 18, fontWeight: 800,
                     background: view === k ? C.honey : "transparent", color: view === k ? "#fff" : C.sub }}>
                     {label}
                   </button>
                 ))}
               </div>
-              <button onClick={() => setTab("settings")} aria-label="설정" style={iconBtn}>⚙</button>
+              <button onClick={() => setTab("settings")} aria-label="설정"
+                style={{ ...iconBtn, width: "auto", height: 50, padding: "0 18px", gap: 7, fontSize: 18, fontWeight: 800 }}>
+                <span style={{ fontSize: 22, lineHeight: 1 }}>⚙</span><span>설정</span>
+              </button>
             </div>
 
             <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
@@ -304,8 +307,8 @@ export default function App() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <span style={{ fontWeight: 800, fontSize: 17 }}>정리본</span>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={shareText} style={{ ...primaryBtn, padding: "9px 18px", fontSize: 15 }}>공유</button>
-                  <button onClick={copyText} style={{ ...ghostBtn, padding: "9px 16px", fontSize: 15 }}>
+                  <button onClick={shareText} style={{ ...primaryBtn, padding: "12px 22px", fontSize: 17 }}>공유</button>
+                  <button onClick={copyText} style={{ ...ghostBtn, padding: "12px 20px", fontSize: 17 }}>
                     {copied ? "복사됨 ✓" : "복사"}
                   </button>
                 </div>
