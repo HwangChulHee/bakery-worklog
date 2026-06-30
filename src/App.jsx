@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { holidayName } from "./holidays";
 import { backupToCloud, restoreFromCloud } from "./cloud";
 import { C, FONT } from "./theme";
@@ -86,6 +86,31 @@ export default function App() {
   // ── 클라우드 동기화 / 인증 ──────────────────────────────
   const snapshot = () => ({ entries, account, defaultStart, defaultEnd, showHolidays });
 
+  // 클라우드 동기화용 refs (최신 인증/상태/변경여부)
+  const authRef = useRef(auth);
+  const snapRef = useRef(null);
+  const dirtyRef = useRef(false);
+  const didMount = useRef(false);
+  useEffect(() => { authRef.current = auth; }, [auth]);
+  useEffect(() => {
+    snapRef.current = { entries, account, defaultStart, defaultEnd, showHolidays };
+  }, [entries, account, defaultStart, defaultEnd, showHolidays]);
+
+  // 변경분이 있을 때만 클라우드에 저장 (레이지 — 중복 쓰기 방지)
+  const flushBackup = useCallback(async () => {
+    const a = authRef.current;
+    if (!a || !a.password || !dirtyRef.current || !snapRef.current) return;
+    dirtyRef.current = false;
+    setCloud({ status: "saving", msg: "" });
+    try {
+      await backupToCloud(a.name, a.password, snapRef.current);
+      setCloud({ status: "saved", msg: "" });
+    } catch (e) {
+      dirtyRef.current = true; // 실패 시 다음 기회에 다시 시도
+      setCloud({ status: "error", msg: e.message });
+    }
+  }, []);
+
   const applyData = (data) => {
     if (!data) return;
     if (data.entries) setEntries(data.entries);
@@ -131,6 +156,7 @@ export default function App() {
     setCloud({ status: "saving", msg: "" });
     try {
       await backupToCloud(auth.name, auth.password, snapshot());
+      dirtyRef.current = false;
       setCloud({ status: "saved", msg: "" });
     } catch (e) {
       setCloud({ status: "error", msg: e.message });
@@ -153,22 +179,25 @@ export default function App() {
     }
   };
 
-  // 변경되면 자동 백업. 첫 렌더에서는 건너뛰어 빈 데이터로 클라우드를 덮어쓰지 않게 한다.
-  const authRef = useRef(auth);
-  useEffect(() => { authRef.current = auth; }, [auth]);
-  const didMount = useRef(false);
+  // 변경되면 15초 뒤 한 번만 백업(연속 입력은 묶임). 첫 렌더는 건너뜀.
   useEffect(() => {
     if (!didMount.current) { didMount.current = true; return; }
-    const a = authRef.current;
-    if (!a || !a.password) return; // 오프라인 진입(비밀번호 없음)이면 자동 백업 안 함
-    const snap = { entries, account, defaultStart, defaultEnd, showHolidays };
-    const t = setTimeout(async () => {
-      setCloud({ status: "saving", msg: "" });
-      try { await backupToCloud(a.name, a.password, snap); setCloud({ status: "saved", msg: "" }); }
-      catch (e) { setCloud({ status: "error", msg: e.message }); }
-    }, 1500);
+    if (!authRef.current || !authRef.current.password) return; // 오프라인 진입이면 자동백업 안 함
+    dirtyRef.current = true;
+    const t = setTimeout(flushBackup, 15000);
     return () => clearTimeout(t);
-  }, [entries, account, defaultStart, defaultEnd, showHolidays]);
+  }, [entries, account, defaultStart, defaultEnd, showHolidays, flushBackup]);
+
+  // 앱을 백그라운드로 보내거나 닫을 때 즉시 저장(놓침 방지)
+  useEffect(() => {
+    const onHide = () => { if (document.visibilityState === "hidden") flushBackup(); };
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", flushBackup);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", flushBackup);
+    };
+  }, [flushBackup]);
 
   // 스플래시: 시작 시 잠깐 보여주고 내림 (자동 로그인은 localStorage 의 auth 로 처리)
   useEffect(() => {
