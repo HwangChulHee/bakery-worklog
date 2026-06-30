@@ -305,7 +305,9 @@ export default function App() {
             {/* 정리본 */}
             <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={{ fontWeight: 800, fontSize: 17 }}>정리본</span>
+                <span style={{ fontWeight: 800, fontSize: 17, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 18, lineHeight: 1 }}>📋</span>정리본
+                </span>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={shareText} style={{ ...primaryBtn, padding: "12px 22px", fontSize: 17 }}>공유</button>
                   <button onClick={copyText} style={{ ...ghostBtn, padding: "12px 20px", fontSize: 17 }}>
@@ -323,7 +325,9 @@ export default function App() {
             {/* 주차별 계산 (정리본 아래) */}
             {breakdown.length > 0 && (
               <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
-                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 10 }}>주차별 계산</div>
+                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 19, lineHeight: 1 }}>🧮</span>주차별 계산
+                </div>
                 <div style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 21, lineHeight: 1.9, color: C.ink }}>
                   {breakdown.map((w, i) => (
                     <div key={i} style={{ display: "flex", gap: 8 }}>

@@ -24,7 +24,9 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
         <button onClick={() => onShiftMonth(-1)} style={navBtn}>◀</button>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 14, color: C.sub, letterSpacing: 1 }}>{year}년</div>
-          <div style={{ fontSize: 28, fontWeight: 800 }}>{month + 1}월 근무</div>
+          <div style={{ fontSize: 28, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 7 }}>
+            <span style={{ fontSize: 26, lineHeight: 1 }}>📅</span>{month + 1}월 근무
+          </div>
           {!isCurrent && (
             <button onClick={onToday} style={todayBtn}>오늘</button>
           )}

@@ -13,7 +13,9 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <button onClick={() => onShiftWeek(-1)} style={navBtn}>◀</button>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 15, color: C.sub, letterSpacing: 1 }}>주간</div>
+          <div style={{ fontSize: 15, color: C.sub, letterSpacing: 1, display: "inline-flex", alignItems: "center", gap: 5, justifyContent: "center" }}>
+            <span style={{ fontSize: 15, lineHeight: 1 }}>📅</span>주간
+          </div>
           <div style={{ fontSize: 24, fontWeight: 800 }}>
             {weekDays[0].getMonth() + 1}/{weekDays[0].getDate()} ~ {weekDays[6].getMonth() + 1}/{weekDays[6].getDate()}
           </div>
