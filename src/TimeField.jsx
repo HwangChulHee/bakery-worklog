@@ -2,8 +2,8 @@ import { pad } from "./time";
 import { C } from "./theme";
 
 // 큰 시/분 드롭다운 + 직접 입력(네이티브) 겸용 시간 선택기
-// 오후 9시(21시)~새벽 5시는 제외 → 6시~20시만 선택
-const HOURS = Array.from({ length: 15 }, (_, i) => i + 6); // 6,7,...,20
+// 8시~18시만 선택 (그 외 시간대 제외)
+const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8,9,...,18
 const MINS = [0, 30]; // 0분 / 30분만 선택
 
 const selStyle = {
