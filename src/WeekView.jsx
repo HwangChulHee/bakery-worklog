@@ -1,10 +1,12 @@
 import { DOW, keyOf as wKeyOf } from "./worklog";
 import { fmtClock, fmtHours, hoursOf } from "./time";
 import { holidayName } from "./holidays";
-import { C, navBtn } from "./theme";
+import { C, navBtn, todayBtn } from "./theme";
 
 // 주간 리스트 보기 (일~토)
-export default function WeekView({ weekDays, entries, showHolidays, now, weekTotal, onShiftWeek, onOpenDay }) {
+export default function WeekView({ weekDays, entries, showHolidays, now, weekTotal, onShiftWeek, onToday, onOpenDay }) {
+  const isCurrent = weekDays.some((dt) =>
+    dt.getFullYear() === now.getFullYear() && dt.getMonth() === now.getMonth() && dt.getDate() === now.getDate());
   return (
     <>
       {/* 주 이동 헤더 */}
@@ -15,6 +17,9 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
           <div style={{ fontSize: 20, fontWeight: 800 }}>
             {weekDays[0].getMonth() + 1}/{weekDays[0].getDate()} ~ {weekDays[6].getMonth() + 1}/{weekDays[6].getDate()}
           </div>
+          {!isCurrent && (
+            <button onClick={onToday} style={todayBtn}>오늘</button>
+          )}
         </div>
         <button onClick={() => onShiftWeek(1)} style={navBtn}>▶</button>
       </div>

@@ -189,7 +189,7 @@ describe("복사하기", () => {
       configurable: true,
     });
     renderApp();
-    fireEvent.click(screen.getByRole("button", { name: "복사하기" }));
+    fireEvent.click(screen.getByRole("button", { name: "복사" }));
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(writeText.mock.calls[0][0]).toContain("==>총근무시간");
   });
@@ -200,6 +200,38 @@ describe("월 이동", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "◀" }));
     expect(screen.getByText("5월 근무")).toBeInTheDocument();
+  });
+});
+
+describe("UX: 공유 / 되돌리기 / 오늘", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("공유 버튼이 Web Share 를 호출한다", () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { value: share, configurable: true });
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "공유" }));
+    expect(share).toHaveBeenCalledTimes(1);
+    expect(share.mock.calls[0][0].text).toContain("총근무시간");
+    delete navigator.share;
+  });
+
+  it("기록 삭제 후 '되돌리기'로 복구된다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-2": { start: "08:30", end: "13:30" } }));
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^6월 2일/ }));
+    fireEvent.click(screen.getByRole("button", { name: "기록 지우기" }));
+    expect(document.body.textContent).not.toContain("6/2(화)");
+    fireEvent.click(screen.getByRole("button", { name: "되돌리기" }));
+    expect(document.body.textContent).toContain("6/2(화) 8:30~1:30(5h)");
+  });
+
+  it("'오늘' 버튼으로 이번 달로 돌아온다", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "◀" })); // 5월로
+    expect(screen.getByText("5월 근무")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "오늘" }));
+    expect(screen.getByText("6월 근무")).toBeInTheDocument();
   });
 });
 

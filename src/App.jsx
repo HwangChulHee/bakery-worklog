@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { restoreFromCloud } from "./cloud";
-import { C, FONT, iconBtn, primaryBtn } from "./theme";
+import { C, FONT, iconBtn, primaryBtn, ghostBtn } from "./theme";
 import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary } from "./worklog";
 import { hoursOf } from "./time";
 import { useLocalStorage } from "./useLocalStorage";
@@ -47,6 +47,7 @@ export default function App() {
   const [login, setLogin] = useState({ busy: false, error: "", offline: false });
   const [booting, setBooting] = useState(true);
   const [installEvt, setInstallEvt] = useState(null); // 설치 가능 시 beforeinstallprompt 이벤트
+  const [snack, setSnack] = useState(null); // { msg, undo } | null
 
   const weeks = getWeeks(year, month);
   const monthTotal = wMonthTotal(entries, year, month);
@@ -59,14 +60,50 @@ export default function App() {
     setDraft(e && e.start ? { start: e.start, end: e.end } : { start: defaultStart, end: defaultEnd });
     setEditing({ y, m, d });
   };
-  const save = () => { setEntries((p) => ({ ...p, [editKey]: { start: draft.start, end: draft.end } })); setEditing(null); };
-  const markOff = () => { setEntries((p) => ({ ...p, [editKey]: { off: true } })); setEditing(null); };
-  const removeDay = () => { setEntries((p) => { const n = { ...p }; delete n[editKey]; return n; }); setEditing(null); };
+  // 되돌리기(Undo) 스낵바
+  const snackTimer = useRef(null);
+  const showSnack = (msg, undo) => {
+    setSnack({ msg, undo });
+    if (snackTimer.current) clearTimeout(snackTimer.current);
+    snackTimer.current = setTimeout(() => setSnack(null), 4000);
+  };
+  const undoSnack = () => {
+    if (snack && snack.undo) snack.undo();
+    setSnack(null);
+    if (snackTimer.current) clearTimeout(snackTimer.current);
+  };
+
+  // 날짜 기록 적용 + 되돌리기 제공
+  const applyEntry = (value, msg) => {
+    const key = editKey;
+    const prev = entries[key];
+    setEntries((p) => { const n = { ...p }; if (value === null) delete n[key]; else n[key] = value; return n; });
+    setEditing(null);
+    showSnack(msg, () => setEntries((p) => {
+      const n = { ...p }; if (prev === undefined) delete n[key]; else n[key] = prev; return n;
+    }));
+  };
+  const save = () => applyEntry({ start: draft.start, end: draft.end }, "저장했어요");
+  const markOff = () => applyEntry({ off: true }, "휴무로 표시했어요");
+  const removeDay = () => applyEntry(null, "기록을 삭제했어요");
 
   const shiftMonth = (dir) => {
     let m = month + dir, y = year;
     if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
     setMonth(m); setYear(y);
+  };
+  const goTodayMonth = () => { setYear(now.getFullYear()); setMonth(now.getMonth()); };
+  const goTodayWeek = () => setWeekAnchor({ y: now.getFullYear(), m: now.getMonth(), d: now.getDate() });
+
+  // 좌우 스와이프로 월/주 이동
+  const touch = useRef({ x: 0, y: 0 });
+  const onTouchStart = (e) => { const t = e.changedTouches[0]; touch.current = { x: t.clientX, y: t.clientY }; };
+  const onTouchEnd = (e) => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touch.current.x, dy = t.clientY - touch.current.y;
+    if (Math.abs(dx) < 50 || Math.abs(dx) <= Math.abs(dy)) return; // 수평 스와이프만
+    const dir = dx < 0 ? 1 : -1;
+    if (view === "month") shiftMonth(dir); else shiftWeek(dir);
   };
 
   // ── 주간 보기 ──────────────────────────────
@@ -189,6 +226,12 @@ export default function App() {
       setCopied(true); setTimeout(() => setCopied(false), 1500);
     } catch { /* clipboard 차단 시 미리보기에서 직접 복사 */ }
   };
+  // 공유: 지원하면 공유 시트(카톡 등), 아니면 복사로 폴백
+  const shareText = async () => {
+    const text = buildText();
+    if (navigator.share) { try { await navigator.share({ text }); } catch { /* 취소 무시 */ } }
+    else copyText();
+  };
 
   if (booting) return <SplashScreen />;
   if (!auth) {
@@ -228,23 +271,28 @@ export default function App() {
               <button onClick={() => setTab("settings")} aria-label="설정" style={iconBtn}>⚙</button>
             </div>
 
-            {view === "month" && (
-              <MonthView year={year} month={month} weeks={weeks} entries={entries}
-                showHolidays={showHolidays} now={now} monthTotal={monthTotal}
-                onShiftMonth={shiftMonth} onOpenDay={openEditor} />
-            )}
-            {view === "week" && (
-              <WeekView weekDays={weekDays} entries={entries} showHolidays={showHolidays}
-                now={now} weekTotal={weekTotal} onShiftWeek={shiftWeek} onOpenDay={openEditor} />
-            )}
+            <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+              {view === "month" && (
+                <MonthView year={year} month={month} weeks={weeks} entries={entries}
+                  showHolidays={showHolidays} now={now} monthTotal={monthTotal}
+                  onShiftMonth={shiftMonth} onToday={goTodayMonth} onOpenDay={openEditor} />
+              )}
+              {view === "week" && (
+                <WeekView weekDays={weekDays} entries={entries} showHolidays={showHolidays}
+                  now={now} weekTotal={weekTotal} onShiftWeek={shiftWeek} onToday={goTodayWeek} onOpenDay={openEditor} />
+              )}
+            </div>
 
             {/* 정리본 */}
             <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <span style={{ fontWeight: 800, fontSize: 15 }}>정리본</span>
-                <button onClick={copyText} style={{ ...primaryBtn, padding: "8px 16px" }}>
-                  {copied ? "복사됨 ✓" : "복사하기"}
-                </button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={shareText} style={{ ...primaryBtn, padding: "8px 16px" }}>공유</button>
+                  <button onClick={copyText} style={{ ...ghostBtn, padding: "8px 14px", fontSize: 14 }}>
+                    {copied ? "복사됨 ✓" : "복사"}
+                  </button>
+                </div>
               </div>
               <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 13.5, lineHeight: 1.7,
                 fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
@@ -271,6 +319,23 @@ export default function App() {
         <EditorSheet editing={editing} draft={draft} setDraft={setDraft}
           draftHours={hoursOf(draft)} hasEntry={!!entries[editKey]}
           onSave={save} onMarkOff={markOff} onRemove={removeDay} onClose={() => setEditing(null)} />
+      )}
+
+      {snack && (
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 24, display: "flex",
+          justifyContent: "center", zIndex: 31, pointerEvents: "none", padding: "0 16px" }}>
+          <div style={{ background: "rgba(42,37,33,0.95)", color: "#fff", fontSize: 14, fontWeight: 700,
+            padding: "10px 12px 10px 18px", borderRadius: 22, display: "flex", alignItems: "center", gap: 12,
+            pointerEvents: "auto", maxWidth: 460, width: "100%", boxSizing: "border-box", justifyContent: "space-between" }}>
+            <span>{snack.msg}</span>
+            {snack.undo && (
+              <button onClick={undoSnack} style={{ background: "transparent", border: "none",
+                color: "#F0C074", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "4px 8px" }}>
+                되돌리기
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       {exitToast && (

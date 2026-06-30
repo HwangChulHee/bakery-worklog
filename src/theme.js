@@ -24,3 +24,5 @@ export const timeBox = { flex: 1, minWidth: 0, display: "flex", flexDirection: "
 export const timeLabel = { fontSize: 12, color: C.sub, fontWeight: 700 };
 export const timeInput = { width: "100%", maxWidth: "100%", boxSizing: "border-box", border: "none",
   background: "transparent", fontSize: 16, fontWeight: 700, color: C.ink, outline: "none" };
+export const todayBtn = { marginTop: 4, padding: "3px 12px", borderRadius: 999, cursor: "pointer",
+  border: `1px solid ${C.honey}`, background: C.workBg, color: C.honeyDark, fontSize: 12, fontWeight: 800 };

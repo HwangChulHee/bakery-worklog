@@ -1,11 +1,12 @@
 import { DOW, keyOf as wKeyOf, weekSum as wWeekSum } from "./worklog";
 import { fmtHours, hoursOf } from "./time";
 import { holidayName } from "./holidays";
-import { C, navBtn } from "./theme";
+import { C, navBtn, todayBtn } from "./theme";
 
 // 월간 달력 보기
-export default function MonthView({ year, month, weeks, entries, showHolidays, now, monthTotal, onShiftMonth, onOpenDay }) {
+export default function MonthView({ year, month, weeks, entries, showHolidays, now, monthTotal, onShiftMonth, onToday, onOpenDay }) {
   const keyOf = (d) => wKeyOf(year, month, d);
+  const isCurrent = year === now.getFullYear() && month === now.getMonth();
   return (
     <>
       {/* 월 이동 헤더 */}
@@ -14,6 +15,9 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 13, color: C.sub, letterSpacing: 1 }}>{year}년</div>
           <div style={{ fontSize: 26, fontWeight: 800 }}>{month + 1}월 근무</div>
+          {!isCurrent && (
+            <button onClick={onToday} style={todayBtn}>오늘</button>
+          )}
         </div>
         <button onClick={() => onShiftMonth(1)} style={navBtn}>▶</button>
       </div>
