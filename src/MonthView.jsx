@@ -33,10 +33,13 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
       </div>
 
       {/* 월 총합 */}
-      <div style={{ background: C.ink, color: "#fff", borderRadius: 16, padding: "14px 18px",
-        display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
-        <span style={{ fontSize: 18, opacity: 0.85 }}>이번 달 총 근무</span>
-        <span style={{ fontSize: 30, fontWeight: 800 }}>{fmtHours(monthTotal)}</span>
+      <div style={{ background: `linear-gradient(135deg, ${C.honey}, ${C.honeyDark})`, color: "#fff",
+        borderRadius: 16, padding: "16px 18px",
+        display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <span style={{ fontSize: 20, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 22, lineHeight: 1 }}>🍞</span>이번 달 총 근무
+        </span>
+        <span style={{ fontSize: 34, fontWeight: 800 }}>{fmtHours(monthTotal)}</span>
       </div>
 
       {/* 달력 */}

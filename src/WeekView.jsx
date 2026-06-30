@@ -25,10 +25,13 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
       </div>
 
       {/* 주 총합 */}
-      <div style={{ background: C.ink, color: "#fff", borderRadius: 16, padding: "14px 18px",
-        display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
-        <span style={{ fontSize: 16, opacity: 0.8 }}>이번 주 총 근무</span>
-        <span style={{ fontSize: 32, fontWeight: 800 }}>{fmtHours(weekTotal)}</span>
+      <div style={{ background: `linear-gradient(135deg, ${C.honey}, ${C.honeyDark})`, color: "#fff",
+        borderRadius: 16, padding: "16px 18px",
+        display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <span style={{ fontSize: 20, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 22, lineHeight: 1 }}>🍞</span>이번 주 총 근무
+        </span>
+        <span style={{ fontSize: 34, fontWeight: 800 }}>{fmtHours(weekTotal)}</span>
       </div>
 
       {/* 요일별 리스트 */}
