@@ -28,7 +28,9 @@ export default function LoginScreen({ onSubmit, onOffline, busy, error, showOffl
       <form onSubmit={submit} style={{ position: "relative", width: "100%", maxWidth: 360, background: C.card,
         borderRadius: 20, padding: 24, border: `1px solid ${C.line}`, boxShadow: "0 12px 40px rgba(0,0,0,0.28)" }}>
         <div style={{ textAlign: "center", marginBottom: 22 }}>
-          <div style={{ fontSize: 28, fontWeight: 800 }}>빵집 근무시간</div>
+          <img src="/bakery-logo.webp" alt="" width="120"
+            style={{ display: "block", margin: "0 auto 8px", maxWidth: "55%", height: "auto" }} />
+          <div style={{ fontSize: 26, fontWeight: 800 }}>빵집 근무시간</div>
           <div style={{ fontSize: 13, color: C.sub, marginTop: 6 }}>이름과 비밀번호로 로그인</div>
         </div>
 

@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png', 'bakery-bg.webp'],
+      includeAssets: ['favicon.png', 'icon-192.png', 'icon-512.png', 'bakery-bg.webp', 'bakery-logo.webp'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
       },
