@@ -341,9 +341,8 @@ export default function App() {
                       {rows.map((r, ri) => {
                         const isMiss = r.kind === "miss", isOffRow = r.kind === "off";
                         return (
-                        <div key={r.d} style={{ padding: isMiss ? "9px 8px" : "9px 2px",
-                          borderTop: ri === 0 ? "none" : `1px solid ${C.bg}`,
-                          background: isMiss ? "#FCEBE9" : "transparent", borderRadius: isMiss ? 8 : 0 }}>
+                        <div key={r.d} style={{ padding: "9px 2px",
+                          borderTop: ri === 0 ? "none" : `1px solid ${C.bg}` }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                             <span style={{ fontSize: 22, fontWeight: isMiss ? 700 : 600,
                               color: isMiss ? C.sun : isOffRow ? C.off : C.ink }}>
