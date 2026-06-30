@@ -331,7 +331,7 @@ export default function App() {
                     ...w.missing.filter((x) => !holidayName(year, month, x.d)).map((x) => ({ ...x, kind: "miss" })),
                   ].sort((a, b) => a.d - b.d);
                   return (
-                    <div key={i} style={{ marginBottom: 22 }}>
+                    <div key={i} style={{ marginBottom: 32 }}>
                       {/* 주 헤더: N주차 */}
                       <div style={{ marginBottom: 4 }}>
                         <span style={{ fontSize: 19, fontWeight: 800, color: C.honeyDark,
