@@ -331,7 +331,7 @@ export default function App() {
                     ...w.missing.filter((x) => !holidayName(year, month, x.d)).map((x) => ({ ...x, kind: "miss" })),
                   ].sort((a, b) => a.d - b.d);
                   return (
-                    <div key={i} style={{ marginBottom: 40 }}>
+                    <div key={i} style={{ marginBottom: 52 }}>
                       {/* 주 헤더: N주차 */}
                       <div style={{ marginBottom: 4 }}>
                         <span style={{ fontSize: 19, fontWeight: 800, color: C.honeyDark,
@@ -347,10 +347,17 @@ export default function App() {
                             color: isMiss ? C.sun : isOffRow ? C.off : C.ink }}>
                             {month + 1}/{r.d} ({r.dow})
                           </span>
-                          {/* 메모: 날짜와 시간 사이에 작게 */}
-                          <span title={r.memo || undefined} style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 600,
-                            color: C.note, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "right" }}>
-                            {r.memo || ""}
+                          {/* 메모: 날짜와 시간 사이에 작은 노트 태그로 */}
+                          <span style={{ flex: 1, minWidth: 0, textAlign: "right" }}>
+                            {r.memo && (
+                              <span title={r.memo} style={{ display: "inline-flex", alignItems: "center", gap: 4,
+                                maxWidth: "100%", verticalAlign: "middle", background: C.noteBg,
+                                border: `1px solid ${C.note}30`, borderRadius: 7, padding: "3px 9px",
+                                fontSize: 14, fontWeight: 700, color: C.note }}>
+                                <span style={{ fontSize: 12, lineHeight: 1, flexShrink: 0 }}>📝</span>
+                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.memo}</span>
+                              </span>
+                            )}
                           </span>
                           <span style={{ fontSize: isMiss ? 18 : 22, fontWeight: 800, flexShrink: 0,
                             color: isMiss ? C.sun : isOffRow ? C.off : C.honeyDark }}>
