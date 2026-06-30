@@ -471,7 +471,8 @@ const primaryBtn = { background: C.honey, color: "#fff", border: "none", borderR
   fontWeight: 800, cursor: "pointer" };
 const ghostBtn = { background: C.card, color: C.sub, border: `1px solid ${C.line}`,
   borderRadius: 12, padding: "14px 0", fontSize: 16, fontWeight: 700, cursor: "pointer" };
-const timeBox = { flex: 1, display: "flex", flexDirection: "column", gap: 6,
-  background: C.bg, border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px" };
+const timeBox = { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6,
+  background: C.bg, border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px", boxSizing: "border-box" };
 const timeLabel = { fontSize: 12, color: C.sub, fontWeight: 700 };
-const timeInput = { border: "none", background: "transparent", fontSize: 18, fontWeight: 700, color: C.ink, outline: "none" };
+const timeInput = { width: "100%", maxWidth: "100%", boxSizing: "border-box", border: "none",
+  background: "transparent", fontSize: 16, fontWeight: 700, color: C.ink, outline: "none" };
