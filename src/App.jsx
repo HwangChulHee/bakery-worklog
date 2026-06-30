@@ -303,7 +303,7 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 16, lineHeight: 1.7,
+              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 19, lineHeight: 1.7,
                 fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
                 background: C.bg, borderRadius: 10, padding: 14, border: `1px dashed ${C.line}` }}>
                 {buildText()}
@@ -313,8 +313,8 @@ export default function App() {
             {/* 주차별 계산 (정리본 아래) */}
             {breakdown.length > 0 && (
               <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
-                <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 10 }}>주차별 계산</div>
-                <div style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 16, lineHeight: 1.9, color: C.ink }}>
+                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 10 }}>주차별 계산</div>
+                <div style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 19, lineHeight: 1.9, color: C.ink }}>
                   {breakdown.map((w, i) => (
                     <div key={i} style={{ display: "flex", gap: 8 }}>
                       <span style={{ color: C.sub, fontWeight: 700, flexShrink: 0 }}>{i + 1}주</span>
