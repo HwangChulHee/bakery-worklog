@@ -292,6 +292,25 @@ describe("뒤로가기(Android)", () => {
   });
 });
 
+describe("월간↔주간 기준일 동기화", () => {
+  it("월간에서 다음 달로 이동 후 주간으로 바꾸면 그 달의 주가 보인다", () => {
+    renderApp(); // 2026-06
+    fireEvent.click(screen.getByRole("button", { name: "▶" })); // 7월
+    expect(screen.getByText("7월 근무")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "주간" }));
+    expect(document.body.textContent).toContain("7/"); // 주 범위가 7월
+  });
+
+  it("주간에서 여러 주 이동 후 월간으로 바꾸면 해당 달이 보인다", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "주간" }));
+    const next = screen.getByRole("button", { name: "▶" });
+    fireEvent.click(next); fireEvent.click(next); fireEvent.click(next); // 6/15 → 7월로
+    fireEvent.click(screen.getByRole("button", { name: "월간" }));
+    expect(screen.getByText("7월 근무")).toBeInTheDocument();
+  });
+});
+
 describe("로그인 게이트", () => {
   it("로그인 안 된 상태면 로그인 화면이 뜨고 달력은 안 보인다", () => {
     localStorage.removeItem("auth");

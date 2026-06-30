@@ -1,4 +1,4 @@
-import { DOW, keyOf as wKeyOf, weekSum as wWeekSum } from "./worklog";
+import { DOW, keyOf as wKeyOf } from "./worklog";
 import { fmtHours, hoursOf } from "./time";
 import { holidayName } from "./holidays";
 import { C, navBtn, todayBtn } from "./theme";
@@ -31,18 +31,16 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
 
       {/* 달력 */}
       <div style={{ background: C.card, borderRadius: 16, padding: 12, border: `1px solid ${C.line}`, marginBottom: 16 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr) 1.1fr", gap: 4, marginBottom: 6 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
           {DOW.map((d, i) => (
             <div key={d} style={{ textAlign: "center", fontSize: 12, fontWeight: 700, padding: "4px 0",
               color: i === 0 ? C.sun : i === 6 ? C.sat : C.sub }}>{d}</div>
           ))}
-          <div style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: C.honeyDark }}>합계</div>
         </div>
 
         {weeks.map((week, wi) => {
-          const ws = wWeekSum(entries, year, month, week);
           return (
-            <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr) 1.1fr", gap: 4, marginBottom: 4 }}>
+            <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
               {week.map((d, di) => {
                 if (!d) return <div key={di} />;
                 const e = entries[keyOf(d)];
@@ -76,11 +74,6 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                   </button>
                 );
               })}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center",
-                background: ws ? C.band : "transparent", borderRadius: 10,
-                fontSize: 13, fontWeight: 800, color: ws ? C.honeyDark : C.line }}>
-                {ws ? fmtHours(ws) : "–"}
-              </div>
             </div>
           );
         })}

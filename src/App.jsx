@@ -23,8 +23,13 @@ const SPLASH_MS = 1100;
 
 export default function App() {
   const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth()); // 0-indexed
+  // 월간/주간이 공유하는 단일 기준일
+  const [anchor, setAnchor] = useState(() => {
+    const t = new Date();
+    return { y: t.getFullYear(), m: t.getMonth(), d: t.getDate() };
+  });
+  const year = anchor.y;
+  const month = anchor.m;
 
   // 자동저장 대상
   const [entries, setEntries] = useLocalStorage("entries", {}); // { "2026-6-1": {start,end} | {off:true} }
@@ -37,10 +42,6 @@ export default function App() {
   const [tab, setTab] = useState("cal"); // "cal" | "settings"
   const [view, setView] = useState("month"); // "month" | "week"
   const [editing, setEditing] = useState(null); // { y, m, d } | null
-  const [weekAnchor, setWeekAnchor] = useState(() => {
-    const t = new Date();
-    return { y: t.getFullYear(), m: t.getMonth(), d: t.getDate() };
-  });
   const [draft, setDraft] = useState({ start: defaultStart, end: defaultEnd, memo: "" });
   const [copied, setCopied] = useState(false);
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
@@ -95,10 +96,10 @@ export default function App() {
   const shiftMonth = (dir) => {
     let m = month + dir, y = year;
     if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
-    setMonth(m); setYear(y);
+    const dim = new Date(y, m + 1, 0).getDate(); // 새 달 일수에 맞춰 day 클램프
+    setAnchor({ y, m, d: Math.min(anchor.d, dim) });
   };
-  const goTodayMonth = () => { setYear(now.getFullYear()); setMonth(now.getMonth()); };
-  const goTodayWeek = () => setWeekAnchor({ y: now.getFullYear(), m: now.getMonth(), d: now.getDate() });
+  const goToday = () => setAnchor({ y: now.getFullYear(), m: now.getMonth(), d: now.getDate() });
 
   // 좌우 스와이프로 월/주 이동
   const touch = useRef({ x: 0, y: 0 });
@@ -112,7 +113,7 @@ export default function App() {
   };
 
   // ── 주간 보기 ──────────────────────────────
-  const anchorDate = new Date(weekAnchor.y, weekAnchor.m, weekAnchor.d);
+  const anchorDate = new Date(anchor.y, anchor.m, anchor.d);
   const weekStart = new Date(anchorDate);
   weekStart.setDate(anchorDate.getDate() - anchorDate.getDay());
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -123,8 +124,8 @@ export default function App() {
     return e ? s + hoursOf(e) : s;
   }, 0);
   const shiftWeek = (dir) => {
-    const dt = new Date(weekStart); dt.setDate(weekStart.getDate() + dir * 7);
-    setWeekAnchor({ y: dt.getFullYear(), m: dt.getMonth(), d: dt.getDate() });
+    const dt = new Date(anchor.y, anchor.m, anchor.d); dt.setDate(dt.getDate() + dir * 7);
+    setAnchor({ y: dt.getFullYear(), m: dt.getMonth(), d: dt.getDate() });
   };
 
   // ── 클라우드 백업(하루 1번) ──────────────────────────────
@@ -280,11 +281,11 @@ export default function App() {
               {view === "month" && (
                 <MonthView year={year} month={month} weeks={weeks} entries={entries}
                   showHolidays={showHolidays} now={now} monthTotal={monthTotal}
-                  onShiftMonth={shiftMonth} onToday={goTodayMonth} onOpenDay={openEditor} />
+                  onShiftMonth={shiftMonth} onToday={goToday} onOpenDay={openEditor} />
               )}
               {view === "week" && (
                 <WeekView weekDays={weekDays} entries={entries} showHolidays={showHolidays}
-                  now={now} weekTotal={weekTotal} onShiftWeek={shiftWeek} onToday={goTodayWeek} onOpenDay={openEditor} />
+                  now={now} weekTotal={weekTotal} onShiftWeek={shiftWeek} onToday={goToday} onOpenDay={openEditor} />
               )}
             </div>
 
