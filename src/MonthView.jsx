@@ -35,7 +35,7 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
       {/* 월 총합 */}
       <div style={{ background: C.ink, color: "#fff", borderRadius: 16, padding: "14px 18px",
         display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
-        <span style={{ fontSize: 15, opacity: 0.8 }}>이번 달 총 근무</span>
+        <span style={{ fontSize: 18, opacity: 0.85 }}>이번 달 총 근무</span>
         <span style={{ fontSize: 30, fontWeight: 800 }}>{fmtHours(monthTotal)}</span>
       </div>
 
@@ -68,9 +68,17 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                     <span style={{ fontSize: 15, fontWeight: 700, color: dayColor, textAlign: "center" }}>{d}</span>
                     {hol && <span style={{ ...band, background: C.sun }}>{hol}</span>}
                     {e && e.memo && <span style={{ ...band, background: C.note }}>{e.memo}</span>}
-                    {isOff
-                      ? <span style={{ fontSize: 14, fontWeight: 800, color: C.off, textAlign: "center" }}>휴무</span>
-                      : e && <span style={{ fontSize: 16, fontWeight: 800, color: C.honeyDark, textAlign: "center" }}>{fmtHours(hoursOf(e))}</span>}
+                    {/* 근무시간/휴무를 남은 공간 가운데에 */}
+                    <span style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
+                      {isOff
+                        ? <span style={{ fontSize: 14, fontWeight: 800, color: C.off }}>휴무</span>
+                        : e && (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 2,
+                            fontSize: 16, fontWeight: 800, color: C.honeyDark }}>
+                            <span style={{ fontSize: 11, lineHeight: 1 }}>🍞</span>{fmtHours(hoursOf(e))}
+                          </span>
+                        )}
+                    </span>
                   </button>
                 );
               })}
