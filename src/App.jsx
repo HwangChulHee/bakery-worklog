@@ -3,6 +3,9 @@ import { holidayName } from "./holidays";
 import { backupToCloud, restoreFromCloud } from "./cloud";
 import { C, FONT } from "./theme";
 import LoginScreen from "./LoginScreen";
+import SplashScreen from "./SplashScreen";
+
+const SPLASH_MS = 1100;
 import { fmtClock, fmtHours, hoursOf } from "./time";
 import { DOW, keyOf as wKeyOf, getWeeks, weekSum as wWeekSum, monthTotal as wMonthTotal, buildSummary } from "./worklog";
 
@@ -49,6 +52,7 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
   const [login, setLogin] = useState({ busy: false, error: "", offline: false });
+  const [booting, setBooting] = useState(true); // 스플래시 표시 여부
 
   const keyOf = (d) => wKeyOf(year, month, d);
   const weeks = getWeeks(year, month);
@@ -101,8 +105,8 @@ export default function App() {
       setAuth({ name, password });
       setLogin({ busy: false, error: "", offline: false });
     } catch (e) {
-      if (e.message.includes("비밀번호")) {
-        setLogin({ busy: false, error: "비밀번호가 올바르지 않습니다", offline: false });
+      if (e.message.includes("올바르지")) {
+        setLogin({ busy: false, error: e.message, offline: false });
       } else {
         setLogin({ busy: false, error: `서버 연결 오류: ${e.message}`, offline: true });
       }
@@ -166,6 +170,12 @@ export default function App() {
     return () => clearTimeout(t);
   }, [entries, account, defaultStart, defaultEnd, showHolidays]);
 
+  // 스플래시: 시작 시 잠깐 보여주고 내림 (자동 로그인은 localStorage 의 auth 로 처리)
+  useEffect(() => {
+    const t = setTimeout(() => setBooting(false), SPLASH_MS);
+    return () => clearTimeout(t);
+  }, []);
+
   // 정리본 텍스트 생성 (어머니 형식)
   const buildText = () => buildSummary({ entries, year, month, account });
 
@@ -177,6 +187,9 @@ export default function App() {
   };
 
   const draftHours = hoursOf(draft);
+
+  // 시작 스플래시
+  if (booting) return <SplashScreen />;
 
   // 로그인 전에는 게이트 화면만 표시
   if (!auth) {

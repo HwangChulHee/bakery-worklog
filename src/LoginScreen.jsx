@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, FONT } from "./theme";
+import BreadLogo from "./BreadLogo";
 
 // 앱 진입 게이트. 이름 + 비밀번호 입력 → onSubmit(name, password).
 // 서버 오류 시 onOffline 으로 오프라인 시작 허용(showOffline=true 일 때만 노출).
@@ -24,6 +25,9 @@ export default function LoginScreen({ onSubmit, onOffline, busy, error, showOffl
       <form onSubmit={submit} style={{ width: "100%", maxWidth: 360, background: C.card,
         borderRadius: 20, padding: 24, border: `1px solid ${C.line}` }}>
         <div style={{ textAlign: "center", marginBottom: 22 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+            <BreadLogo size={84} />
+          </div>
           <div style={{ fontSize: 28, fontWeight: 800 }}>빵집 근무시간</div>
           <div style={{ fontSize: 13, color: C.sub, marginTop: 6 }}>이름과 비밀번호로 로그인</div>
         </div>
