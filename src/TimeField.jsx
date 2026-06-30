@@ -6,9 +6,9 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const MINS = Array.from({ length: 12 }, (_, i) => i * 5); // 0,5,...,55
 
 const selStyle = {
-  flex: 1, minWidth: 0, fontSize: 20, fontWeight: 800, color: C.ink,
+  flex: 1, minWidth: 0, fontSize: 22, fontWeight: 800, color: C.ink,
   background: C.card, border: `1px solid ${C.line}`, borderRadius: 12,
-  padding: "12px 8px", textAlign: "center", cursor: "pointer",
+  padding: "14px 8px", textAlign: "center", cursor: "pointer",
 };
 
 export default function TimeField({ label, value, onChange }) {
@@ -17,7 +17,7 @@ export default function TimeField({ label, value, onChange }) {
   const mins = MINS.includes(m) ? MINS : [...MINS, m].sort((a, b) => a - b);
   return (
     <div style={{ minWidth: 0 }}>
-      <div style={{ fontSize: 12, color: C.sub, fontWeight: 700, marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 14, color: C.sub, fontWeight: 700, marginBottom: 6 }}>{label}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <select aria-label={`${label} 시`} value={h} style={selStyle}
           onChange={(e) => onChange(`${pad(Number(e.target.value))}:${pad(m)}`)}>
@@ -31,8 +31,8 @@ export default function TimeField({ label, value, onChange }) {
       <input type="time" aria-label={`${label} 직접 입력`} value={value}
         onChange={(e) => e.target.value && onChange(e.target.value)}
         style={{ width: "100%", boxSizing: "border-box", marginTop: 8,
-          border: `1px dashed ${C.line}`, borderRadius: 10, padding: "8px 10px",
-          fontSize: 14, color: C.sub, background: C.bg }} />
+          border: `1px dashed ${C.line}`, borderRadius: 10, padding: "10px 10px",
+          fontSize: 16, color: C.sub, background: C.bg }} />
     </div>
   );
 }

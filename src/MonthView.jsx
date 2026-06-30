@@ -9,7 +9,7 @@ const COLS = "0.78fr repeat(5, 1fr) 0.78fr";
 // 칸 안의 공휴일/메모 밴드 (여백 없이 꽉 채움 + 흰 글씨, 왼쪽 정렬)
 const band = {
   width: "100%", boxSizing: "border-box", textAlign: "left", color: "#fff",
-  fontSize: 11, fontWeight: 700, lineHeight: 1.35, padding: "1px 4px",
+  fontSize: 12, fontWeight: 700, lineHeight: 1.35, padding: "2px 4px",
   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
 };
 
@@ -43,7 +43,7 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
       <div style={{ background: C.card, borderRadius: 16, padding: 12, border: `1px solid ${C.line}`, marginBottom: 16 }}>
         <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 4, marginBottom: 6 }}>
           {DOW.map((d, i) => (
-            <div key={d} style={{ textAlign: "center", fontSize: 13, fontWeight: 700, padding: "4px 0",
+            <div key={d} style={{ textAlign: "center", fontSize: 14, fontWeight: 700, padding: "4px 0",
               color: i === 0 ? C.sun : i === 6 ? C.sat : C.sub }}>{d}</div>
           ))}
         </div>
@@ -67,7 +67,7 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                     display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: "flex-start", gap: 3 }}>
                     <span style={{ fontSize: 15, fontWeight: 700, color: dayColor, textAlign: "center" }}>{d}</span>
                     {hol && <span style={{ ...band, background: C.sun }}>{hol}</span>}
-                    {e && e.memo && <span style={{ ...band, background: C.honey }}>{e.memo}</span>}
+                    {e && e.memo && <span style={{ ...band, background: C.note }}>{e.memo}</span>}
                     {isOff
                       ? <span style={{ fontSize: 14, fontWeight: 800, color: C.off, textAlign: "center" }}>휴무</span>
                       : e && <span style={{ fontSize: 16, fontWeight: 800, color: C.honeyDark, textAlign: "center" }}>{fmtHours(hoursOf(e))}</span>}

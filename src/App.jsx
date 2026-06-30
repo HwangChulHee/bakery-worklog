@@ -261,9 +261,9 @@ export default function App() {
             {installEvt && (
               <button onClick={installApp} style={{ width: "100%", marginBottom: 10, padding: "12px 14px",
                 borderRadius: 12, border: "none", cursor: "pointer", background: C.honey, color: "#fff",
-                fontSize: 14, fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                fontSize: 15, fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>📲 홈 화면에 앱으로 설치</span>
-                <span style={{ fontSize: 13, opacity: 0.9 }}>설치 ›</span>
+                <span style={{ fontSize: 14, opacity: 0.9 }}>설치 ›</span>
               </button>
             )}
             {/* 상단: 보기 토글 + 설정 */}

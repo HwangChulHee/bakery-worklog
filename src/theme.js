@@ -4,6 +4,7 @@ export const C = {
   line: "#E7DFD3", honey: "#CC8A3C", honeyDark: "#B0721E",
   workBg: "#FBEFD8", sun: "#C2453B", sat: "#2F6FB0", band: "#EFE5D3",
   offBg: "#ECE5D9", off: "#9A8C78",
+  note: "#2F6FB0", noteBg: "#E9F1F9", // 메모(파란 계열) — 시간(허니)과 구분
 };
 
 export const FONT =
@@ -25,4 +26,4 @@ export const timeLabel = { fontSize: 13, color: C.sub, fontWeight: 700 };
 export const timeInput = { width: "100%", maxWidth: "100%", boxSizing: "border-box", border: "none",
   background: "transparent", fontSize: 18, fontWeight: 700, color: C.ink, outline: "none" };
 export const todayBtn = { marginTop: 4, padding: "4px 14px", borderRadius: 999, cursor: "pointer",
-  border: `1px solid ${C.honey}`, background: C.workBg, color: C.honeyDark, fontSize: 13, fontWeight: 800 };
+  border: `1px solid ${C.honey}`, background: C.workBg, color: C.honeyDark, fontSize: 14, fontWeight: 800 };
