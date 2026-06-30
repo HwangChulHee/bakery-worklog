@@ -367,13 +367,13 @@ export default function App() {
                         </div>
                         );
                       })}
-                      {/* 검산식 (좌: 주차별 합계 / 우: 덧셈, 한 줄 고정) */}
+                      {/* 검산식 (오른쪽 정렬: 주차별 합계 + 덧셈, 한 줄 고정) */}
                       <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.line}`,
-                        display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                        display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: 8 }}>
                         <span style={{ fontSize: 17, fontWeight: 800, color: C.sub, flexShrink: 0 }}>주차별 합계</span>
                         <span style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace",
                           fontSize: 16, fontWeight: 700, color: C.honeyDark,
-                          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0, textAlign: "right" }}>
+                          minWidth: 0, textAlign: "right", lineHeight: 1.5 }}>
                           {w.hrs.map(fmtN).join(" + ")} = <b style={{ fontSize: 19 }}>{fmtHours(w.total)}</b>
                         </span>
                       </div>
@@ -388,7 +388,7 @@ export default function App() {
                     <span style={{ fontSize: 21, fontWeight: 800, flexShrink: 0 }}>합계</span>
                     <span style={{ background: C.honey, color: "#fff", borderRadius: 10, padding: "8px 14px",
                       fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 700,
-                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0, textAlign: "right" }}>
+                      minWidth: 0, textAlign: "right", lineHeight: 1.5 }}>
                       {breakdown.map((w) => fmtN(w.total)).join(" + ")} = <b style={{ fontSize: 21 }}>{fmtHours(breakdownTotal)}</b>
                     </span>
                   </div>

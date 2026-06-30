@@ -182,6 +182,32 @@ describe("weeklyBreakdown", () => {
       },
     ]);
   });
+
+  // ── 엣지 케이스 ──
+  it("토요일 근무는 days 로 표시되고 missing(경고)에는 포함되지 않는다", () => {
+    // 6/5(금)·6/6(토) 근무 → 토요일은 근무로 표시, 경고는 월~금만(1~4)
+    const entries = {
+      "2026-6-5": { start: "08:30", end: "13:30" },
+      "2026-6-6": { start: "08:30", end: "13:30" },
+    };
+    const [w] = weeklyBreakdown(entries, 2026, 5, 6);
+    expect(w.days).toEqual([
+      { d: 5, dow: "금", hours: 5, memo: "" },
+      { d: 6, dow: "토", hours: 5, memo: "" },
+    ]);
+    expect(w.missing).toEqual([
+      { d: 1, dow: "월" }, { d: 2, dow: "화" }, { d: 3, dow: "수" }, { d: 4, dow: "목" },
+    ]);
+  });
+  it("upToDay 경계: 같은 날은 포함, 다음 날은 제외", () => {
+    const entries = { "2026-6-1": { start: "08:30", end: "13:30" } }; // 월
+    const [w] = weeklyBreakdown(entries, 2026, 5, 3); // 6/3(수)까지만
+    expect(w.missing).toEqual([{ d: 2, dow: "화" }, { d: 3, dow: "수" }]); // 4,5 제외
+  });
+  it("근무 없이 휴무만 있는 주는 제외된다", () => {
+    const entries = { "2026-6-1": { off: true } };
+    expect(weeklyBreakdown(entries, 2026, 5, 31)).toEqual([]);
+  });
 });
 
 describe("DOW", () => {

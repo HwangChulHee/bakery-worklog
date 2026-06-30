@@ -351,6 +351,37 @@ describe("월간↔주간 기준일 동기화", () => {
   });
 });
 
+describe("입력 엣지 케이스 (검산 경고)", () => {
+  it("토요일 근무는 근무로 표시되고 '입력안함' 경고 대상이 아니다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-13": { start: "08:30", end: "13:30" } })); // 6/13(토)
+    renderApp(); // 오늘 2026-06-15
+    expect(document.body.textContent).toContain("6/13 (토)🍞 5h"); // 토요일=근무로 표시
+    expect(document.body.textContent).toContain("입력안함");       // 같은 주 평일들은 경고
+  });
+
+  it("공휴일 평일(6/3 지방선거일)은 미입력이어도 경고하지 않는다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-1": { start: "08:30", end: "13:30" } }));
+    renderApp();
+    expect(document.body.textContent).not.toContain("6/3 (수)"); // 공휴일은 경고 제외
+    expect(document.body.textContent).toContain("6/2 (화)");     // 일반 평일은 경고
+  });
+
+  it("이번 달 아직 안 온 평일은 경고하지 않는다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-15": { start: "08:30", end: "13:30" } })); // 오늘
+    renderApp();
+    expect(document.body.textContent).not.toContain("입력안함"); // 6/16~ 미래는 경고 X
+  });
+
+  it("지난 달은 평일 공백을 모두 경고한다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-5-4": { start: "08:30", end: "13:30" } })); // 5/4(월)
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "◀" })); // 5월로 이동
+    expect(screen.getByText("5월 근무")).toBeInTheDocument();
+    expect(document.body.textContent).toContain("입력안함");
+    expect(document.body.textContent).toContain("5/6 (수)"); // 5/5는 어린이날(공휴일)이라 제외됨
+  });
+});
+
 describe("로그인 게이트", () => {
   it("로그인 안 된 상태면 로그인 화면이 뜨고 달력은 안 보인다", () => {
     localStorage.removeItem("auth");
