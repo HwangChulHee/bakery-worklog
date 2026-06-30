@@ -14,7 +14,7 @@ export default function LoginScreen({ onSubmit, onOffline, busy, error, showOffl
 
   const field = {
     width: "100%", boxSizing: "border-box", border: `1px solid ${C.line}`,
-    borderRadius: 12, padding: "13px 14px", fontSize: 16, marginBottom: 12,
+    borderRadius: 12, padding: "14px 14px", fontSize: 17, marginBottom: 12,
     color: C.ink, background: C.bg, outline: "none",
   };
 
@@ -30,8 +30,8 @@ export default function LoginScreen({ onSubmit, onOffline, busy, error, showOffl
         <div style={{ textAlign: "center", marginBottom: 22 }}>
           <img src="/bakery-logo.webp" alt="" width="120"
             style={{ display: "block", margin: "0 auto 8px", maxWidth: "55%", height: "auto" }} />
-          <div style={{ fontSize: 26, fontWeight: 800 }}>빵집 근무시간</div>
-          <div style={{ fontSize: 13, color: C.sub, marginTop: 6 }}>이름과 비밀번호로 로그인</div>
+          <div style={{ fontSize: 28, fontWeight: 800 }}>빵집 근무시간</div>
+          <div style={{ fontSize: 15, color: C.sub, marginTop: 6 }}>이름과 비밀번호로 로그인</div>
         </div>
 
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름"
@@ -40,21 +40,21 @@ export default function LoginScreen({ onSubmit, onOffline, busy, error, showOffl
           placeholder="비밀번호" autoComplete="current-password" style={field} />
 
         {error && (
-          <div style={{ color: C.sun, fontSize: 13, fontWeight: 700, marginBottom: 12 }}>{error}</div>
+          <div style={{ color: C.sun, fontSize: 14, fontWeight: 700, marginBottom: 12 }}>{error}</div>
         )}
 
         <button type="submit" disabled={busy} style={{
-          width: "100%", padding: "14px 0", borderRadius: 12, border: "none",
-          background: C.honey, color: "#fff", fontSize: 16, fontWeight: 800,
+          width: "100%", padding: "15px 0", borderRadius: 12, border: "none",
+          background: C.honey, color: "#fff", fontSize: 18, fontWeight: 800,
           cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
           {busy ? "확인 중…" : "들어가기"}
         </button>
 
         {showOffline && (
           <button type="button" onClick={() => onOffline(name.trim(), password)} style={{
-            width: "100%", marginTop: 10, padding: "12px 0", borderRadius: 12,
+            width: "100%", marginTop: 10, padding: "13px 0", borderRadius: 12,
             border: `1px solid ${C.line}`, background: C.card, color: C.sub,
-            fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
             오프라인으로 시작
           </button>
         )}

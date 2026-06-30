@@ -271,7 +271,7 @@ export default function App() {
               <div style={{ display: "flex", background: C.card, border: `1px solid ${C.line}`, borderRadius: 10, overflow: "hidden" }}>
                 {[["month", "월간"], ["week", "주간"]].map(([k, label]) => (
                   <button key={k} onClick={() => setView(k)} style={{
-                    padding: "8px 16px", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 800,
+                    padding: "10px 20px", border: "none", cursor: "pointer", fontSize: 16, fontWeight: 800,
                     background: view === k ? C.honey : "transparent", color: view === k ? "#fff" : C.sub }}>
                     {label}
                   </button>
@@ -295,8 +295,8 @@ export default function App() {
             {/* 주차별 계산 */}
             {breakdown.length > 0 && (
               <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
-                <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 10 }}>주차별 계산</div>
-                <div style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 14, lineHeight: 1.9, color: C.ink }}>
+                <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 10 }}>주차별 계산</div>
+                <div style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 16, lineHeight: 1.9, color: C.ink }}>
                   {breakdown.map((w, i) => (
                     <div key={i} style={{ display: "flex", gap: 8 }}>
                       <span style={{ color: C.sub, fontWeight: 700, flexShrink: 0 }}>{i + 1}주</span>
@@ -316,10 +316,10 @@ export default function App() {
             {/* 정리본 */}
             <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={{ fontWeight: 800, fontSize: 15 }}>정리본</span>
+                <span style={{ fontWeight: 800, fontSize: 17 }}>정리본</span>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={shareText} style={{ ...primaryBtn, padding: "8px 16px" }}>공유</button>
-                  <button onClick={copyText} style={{ ...ghostBtn, padding: "8px 14px", fontSize: 14 }}>
+                  <button onClick={shareText} style={{ ...primaryBtn, padding: "9px 18px", fontSize: 15 }}>공유</button>
+                  <button onClick={copyText} style={{ ...ghostBtn, padding: "9px 16px", fontSize: 15 }}>
                     {copied ? "복사됨 ✓" : "복사"}
                   </button>
                 </div>
@@ -354,13 +354,13 @@ export default function App() {
       {snack && (
         <div style={{ position: "fixed", left: 0, right: 0, bottom: 24, display: "flex",
           justifyContent: "center", zIndex: 31, pointerEvents: "none", padding: "0 16px" }}>
-          <div style={{ background: "rgba(42,37,33,0.95)", color: "#fff", fontSize: 14, fontWeight: 700,
-            padding: "10px 12px 10px 18px", borderRadius: 22, display: "flex", alignItems: "center", gap: 12,
+          <div style={{ background: "rgba(42,37,33,0.95)", color: "#fff", fontSize: 15, fontWeight: 700,
+            padding: "12px 12px 12px 18px", borderRadius: 22, display: "flex", alignItems: "center", gap: 12,
             pointerEvents: "auto", maxWidth: 460, width: "100%", boxSizing: "border-box", justifyContent: "space-between" }}>
             <span>{snack.msg}</span>
             {snack.undo && (
               <button onClick={undoSnack} style={{ background: "transparent", border: "none",
-                color: "#F0C074", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "4px 8px" }}>
+                color: "#F0C074", fontSize: 15, fontWeight: 800, cursor: "pointer", padding: "4px 8px" }}>
                 되돌리기
               </button>
             )}
@@ -371,8 +371,8 @@ export default function App() {
       {exitToast && (
         <div style={{ position: "fixed", left: 0, right: 0, bottom: 24, display: "flex",
           justifyContent: "center", zIndex: 30, pointerEvents: "none" }}>
-          <div style={{ background: "rgba(42,37,33,0.92)", color: "#fff", fontSize: 13, fontWeight: 700,
-            padding: "10px 16px", borderRadius: 20 }}>
+          <div style={{ background: "rgba(42,37,33,0.92)", color: "#fff", fontSize: 14, fontWeight: 700,
+            padding: "11px 18px", borderRadius: 20 }}>
             한 번 더 누르면 종료됩니다
           </div>
         </div>

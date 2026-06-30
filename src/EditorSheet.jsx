@@ -11,10 +11,10 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, hasE
       <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, width: "100%", maxWidth: 460,
         borderRadius: "20px 20px 0 0", padding: "20px 18px 26px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 20, fontWeight: 800 }}>
+          <span style={{ fontSize: 22, fontWeight: 800 }}>
             {editing.m + 1}월 {editing.d}일 ({DOW[new Date(editing.y, editing.m, editing.d).getDay()]})
           </span>
-          <span style={{ fontSize: 22, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
+          <span style={{ fontSize: 24, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 14 }}>
@@ -26,15 +26,15 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, hasE
           placeholder="메모 (선택)" rows={2}
           style={{ width: "100%", boxSizing: "border-box", marginBottom: 16, resize: "none",
             border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px",
-            fontSize: 15, color: C.ink, background: C.bg, fontFamily: "inherit", outline: "none" }} />
+            fontSize: 16, color: C.ink, background: C.bg, fontFamily: "inherit", outline: "none" }} />
 
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={onMarkOff} style={{ ...ghostBtn, flex: 1 }}>휴무</button>
-          <button onClick={onSave} style={{ ...primaryBtn, flex: 2, padding: "14px 0", fontSize: 16 }}>저장</button>
+          <button onClick={onSave} style={{ ...primaryBtn, flex: 2, padding: "15px 0", fontSize: 18 }}>저장</button>
         </div>
         {hasEntry && (
-          <button onClick={onRemove} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: "10px 0",
-            fontSize: 14, color: C.sub, border: "none", background: "transparent" }}>
+          <button onClick={onRemove} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: "11px 0",
+            fontSize: 15, color: C.sub, border: "none", background: "transparent" }}>
             기록 지우기
           </button>
         )}
