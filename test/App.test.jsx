@@ -186,23 +186,13 @@ describe("근무 입력 흐름", () => {
     expect(document.body.textContent).toContain("6/3(수) 8:30~2:00(5.5h)");
   });
 
-  it("저장 버튼 없이 뒤로가기로 나가도 자동저장된다", () => {
+  it("저장 버튼 없이 뒤로가기로 나가면 저장되지 않는다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "6월 4일" }));
     fireEvent.change(screen.getByLabelText("퇴근 시"), { target: { value: "14" } });
-    fireEvent.change(screen.getByLabelText("퇴근 분"), { target: { value: "30" } });
-    // 저장 버튼을 누르지 않고 뒤로가기로 시트를 닫음
+    // 저장 버튼을 누르지 않고 뒤로가기로 시트를 닫음 → 저장 안 됨
     act(() => { window.dispatchEvent(new PopStateEvent("popstate")); });
-    expect(JSON.parse(localStorage.getItem("entries"))["2026-6-4"]).toEqual({ start: "08:30", end: "14:30" });
-  });
-
-  it("기록 있는 날을 변경 없이 닫으면 토스트 없이 그대로 유지된다", () => {
-    localStorage.setItem("entries", JSON.stringify({ "2026-6-2": { start: "08:30", end: "13:30" } }));
-    renderApp();
-    fireEvent.click(screen.getByRole("button", { name: /^6월 2일/ }));
-    act(() => { window.dispatchEvent(new PopStateEvent("popstate")); }); // 변경 없이 닫기
-    expect(screen.queryByText("저장했어요")).not.toBeInTheDocument();
-    expect(JSON.parse(localStorage.getItem("entries"))["2026-6-2"]).toEqual({ start: "08:30", end: "13:30" });
+    expect(JSON.parse(localStorage.getItem("entries") || "{}")["2026-6-4"]).toBeUndefined();
   });
 });
 

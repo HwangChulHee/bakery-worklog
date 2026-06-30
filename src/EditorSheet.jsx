@@ -36,7 +36,7 @@ export default function EditorSheet({ editing, draft, setDraft, mode, setMode, d
             <span style={{ fontSize: 24, fontWeight: 800 }}>{dateLabel}</span>
             {hasEntry && (
               <button onClick={() => setConfirming(true)} style={{ background: "transparent",
-                border: "none", cursor: "pointer", fontSize: 15, fontWeight: 700,
+                border: "none", cursor: "pointer", fontSize: 18, fontWeight: 700,
                 color: C.sub, textDecoration: "underline", padding: 4 }}>
                 기록 지우기
               </button>
