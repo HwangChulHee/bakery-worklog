@@ -7,9 +7,12 @@ beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   vi.setSystemTime(new Date(2026, 5, 15, 9, 0, 0));
   localStorage.clear();
+  // 대부분의 테스트는 로그인된 상태에서 시작 (password "" → 자동백업 꺼짐, 네트워크 없음)
+  localStorage.setItem("auth", JSON.stringify({ name: "테스트", password: "" }));
 });
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe("App 기본 렌더", () => {
@@ -164,11 +167,73 @@ describe("월 이동", () => {
   });
 });
 
-describe("클라우드 백업 UI", () => {
-  afterEach(() => vi.unstubAllGlobals());
+describe("로그인 게이트", () => {
+  it("로그인 안 된 상태면 로그인 화면이 뜨고 달력은 안 보인다", () => {
+    localStorage.removeItem("auth");
+    render(<App />);
+    expect(screen.getByPlaceholderText("이름")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("비밀번호")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "들어가기" })).toBeInTheDocument();
+    expect(screen.queryByText("정리본")).not.toBeInTheDocument();
+  });
 
-  it("'지금 백업'이 서버로 전송하고 완료 표시", async () => {
-    localStorage.setItem("backupPassword", JSON.stringify("mypw"));
+  it("이름+비밀번호가 맞으면(서버 200) 앱으로 진입한다", async () => {
+    localStorage.removeItem("auth");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: null }) }));
+    render(<App />);
+    fireEvent.change(screen.getByPlaceholderText("이름"), { target: { value: "철희" } });
+    fireEvent.change(screen.getByPlaceholderText("비밀번호"), { target: { value: "pw" } });
+    fireEvent.click(screen.getByRole("button", { name: "들어가기" }));
+
+    expect(await screen.findByText("정리본")).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem("auth"))).toEqual({ name: "철희", password: "pw" });
+  });
+
+  it("로그인 시 클라우드 데이터를 불러와 채운다", async () => {
+    localStorage.removeItem("auth");
+    const data = { entries: { "2026-6-2": { start: "08:30", end: "13:30" } }, account: "복구은행(1)" };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data }) }));
+    render(<App />);
+    fireEvent.change(screen.getByPlaceholderText("이름"), { target: { value: "철희" } });
+    fireEvent.change(screen.getByPlaceholderText("비밀번호"), { target: { value: "pw" } });
+    fireEvent.click(screen.getByRole("button", { name: "들어가기" }));
+
+    expect(await screen.findByText("정리본")).toBeInTheDocument();
+    expect(document.body.textContent).toContain("6/2(화)");
+    expect(document.body.textContent).toContain("복구은행(1)");
+  });
+
+  it("비밀번호가 틀리면(401) 오류를 보여주고 진입 못 한다", async () => {
+    localStorage.removeItem("auth");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: false, status: 401, json: async () => ({ error: "비밀번호가 올바르지 않습니다" }),
+    }));
+    render(<App />);
+    fireEvent.change(screen.getByPlaceholderText("이름"), { target: { value: "철희" } });
+    fireEvent.change(screen.getByPlaceholderText("비밀번호"), { target: { value: "wrong" } });
+    fireEvent.click(screen.getByRole("button", { name: "들어가기" }));
+
+    expect(await screen.findByText("비밀번호가 올바르지 않습니다")).toBeInTheDocument();
+    expect(screen.queryByText("정리본")).not.toBeInTheDocument();
+  });
+
+  it("서버 오류 시 '오프라인으로 시작'으로 진입할 수 있다", async () => {
+    localStorage.removeItem("auth");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network")));
+    render(<App />);
+    fireEvent.change(screen.getByPlaceholderText("이름"), { target: { value: "철희" } });
+    fireEvent.change(screen.getByPlaceholderText("비밀번호"), { target: { value: "pw" } });
+    fireEvent.click(screen.getByRole("button", { name: "들어가기" }));
+
+    const offlineBtn = await screen.findByRole("button", { name: "오프라인으로 시작" });
+    fireEvent.click(offlineBtn);
+    expect(await screen.findByText("정리본")).toBeInTheDocument();
+  });
+});
+
+describe("클라우드 백업 / 로그아웃", () => {
+  it("'지금 백업'이 로그인 계정으로 서버에 전송", async () => {
+    localStorage.setItem("auth", JSON.stringify({ name: "철희", password: "mypw" }));
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -177,27 +242,16 @@ describe("클라우드 백업 UI", () => {
     fireEvent.click(screen.getByRole("button", { name: "지금 백업" }));
 
     expect(await screen.findByText("백업 완료 ✓")).toBeInTheDocument();
-    const [url, opts] = fetchMock.mock.calls[0];
-    expect(url).toBe("/api/backup");
-    expect(opts.method).toBe("POST");
-    expect(JSON.parse(opts.body).password).toBe("mypw");
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.name).toBe("철희");
+    expect(body.password).toBe("mypw");
   });
 
-  it("비밀번호 없이 백업하면 오류 안내", () => {
-    render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "설정" }));
-    fireEvent.click(screen.getByRole("button", { name: "지금 백업" }));
-    expect(screen.getByText("오류: 비밀번호를 입력하세요")).toBeInTheDocument();
-  });
-
-  it("복구하면 클라우드 데이터로 채워진다", async () => {
-    localStorage.setItem("backupPassword", JSON.stringify("mypw"));
-    const data = {
-      entries: { "2026-6-2": { start: "08:30", end: "13:30" } },
-      account: "복구은행(1)",
-    };
+  it("복구는 비밀번호를 다시 입력받아 덮어쓴다", async () => {
+    localStorage.setItem("auth", JSON.stringify({ name: "철희", password: "mypw" }));
+    const data = { entries: { "2026-6-2": { start: "08:30", end: "13:30" } }, account: "복구은행(1)" };
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data }) }));
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "prompt").mockReturnValue("mypw");
 
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
@@ -207,5 +261,13 @@ describe("클라우드 백업 UI", () => {
     fireEvent.click(screen.getByRole("button", { name: "달력" }));
     expect(document.body.textContent).toContain("6/2(화)");
     expect(document.body.textContent).toContain("복구은행(1)");
+  });
+
+  it("로그아웃하면 로그인 화면으로 돌아간다", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "로그아웃" }));
+    expect(screen.getByPlaceholderText("이름")).toBeInTheDocument();
+    expect(screen.queryByText("정리본")).not.toBeInTheDocument();
   });
 });

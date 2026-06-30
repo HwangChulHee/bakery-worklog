@@ -5,7 +5,11 @@
 //   POST /api/backup { password, data } → 데이터 저장 { ok: true }
 import { Redis } from "@upstash/redis";
 
-const KEY = "worklog:default";
+// 이름별로 저장소 키 분리 (이름이 곧 백업 구분자)
+function keyFor(name) {
+  const safe = String(name || "default").trim().toLowerCase().slice(0, 64) || "default";
+  return `worklog:${safe}`;
+}
 
 function getRedis() {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -23,6 +27,7 @@ export default async function handler(req, res) {
   const body = typeof req.body === "string" && req.body ? JSON.parse(req.body) : req.body || {};
   const password =
     req.headers["x-backup-password"] || (req.query && req.query.password) || body.password;
+  const name = (req.query && req.query.name) || body.name;
 
   if (password !== expected) {
     return res.status(401).json({ error: "비밀번호가 올바르지 않습니다" });
@@ -33,6 +38,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "저장소(Redis)가 연결되지 않았습니다" });
   }
 
+  const KEY = keyFor(name);
   try {
     if (req.method === "GET") {
       const data = await redis.get(KEY);

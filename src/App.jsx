@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { holidayName } from "./holidays";
 import { backupToCloud, restoreFromCloud } from "./cloud";
+import { C, FONT } from "./theme";
+import LoginScreen from "./LoginScreen";
 import { fmtClock, fmtHours, hoursOf } from "./time";
 import { DOW, keyOf as wKeyOf, getWeeks, weekSum as wWeekSum, monthTotal as wMonthTotal, buildSummary } from "./worklog";
 
@@ -28,13 +30,6 @@ function useLocalStorage(key, initial) {
 
 const QUICK_ENDS = ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"];
 
-const C = {
-  bg: "#F6F1E9", card: "#FFFFFF", ink: "#2A2521", sub: "#857A6D",
-  line: "#E7DFD3", honey: "#CC8A3C", honeyDark: "#B0721E",
-  workBg: "#FBEFD8", sun: "#C2453B", sat: "#2F6FB0", band: "#EFE5D3",
-  offBg: "#ECE5D9", off: "#9A8C78",
-};
-
 export default function App() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -46,13 +41,14 @@ export default function App() {
   const [defaultStart, setDefaultStart] = useLocalStorage("defaultStart", "08:30");
   const [defaultEnd, setDefaultEnd] = useLocalStorage("defaultEnd", "13:30");
   const [showHolidays, setShowHolidays] = useLocalStorage("showHolidays", true);
-  const [backupPassword, setBackupPassword] = useLocalStorage("backupPassword", "");
+  const [auth, setAuth] = useLocalStorage("auth", null); // { name, password } | null
 
   const [tab, setTab] = useState("cal"); // "cal" | "settings"
   const [editing, setEditing] = useState(null); // day number or null
   const [draft, setDraft] = useState({ start: defaultStart, end: defaultEnd });
   const [copied, setCopied] = useState(false);
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
+  const [login, setLogin] = useState({ busy: false, error: "", offline: false });
 
   const keyOf = (d) => wKeyOf(year, month, d);
   const weeks = getWeeks(year, month);
@@ -83,51 +79,88 @@ export default function App() {
     setMonth(m); setYear(y);
   };
 
-  // ── 클라우드 백업 ──────────────────────────────
+  // ── 클라우드 동기화 / 인증 ──────────────────────────────
   const snapshot = () => ({ entries, account, defaultStart, defaultEnd, showHolidays });
 
-  const doBackup = async (pw) => {
-    if (!pw) { setCloud({ status: "error", msg: "비밀번호를 입력하세요" }); return; }
+  const applyData = (data) => {
+    if (!data) return;
+    if (data.entries) setEntries(data.entries);
+    if (data.account != null) setAccount(data.account);
+    if (data.defaultStart) setDefaultStart(data.defaultStart);
+    if (data.defaultEnd) setDefaultEnd(data.defaultEnd);
+    if (typeof data.showHolidays === "boolean") setShowHolidays(data.showHolidays);
+  };
+
+  // 로그인: 서버로 비밀번호 검증 + 클라우드 데이터 불러오기
+  const handleLogin = async (name, password) => {
+    if (!name || !password) { setLogin({ busy: false, error: "이름과 비밀번호를 입력하세요", offline: false }); return; }
+    setLogin({ busy: true, error: "", offline: false });
+    try {
+      const data = await restoreFromCloud(name, password);
+      applyData(data);
+      setAuth({ name, password });
+      setLogin({ busy: false, error: "", offline: false });
+    } catch (e) {
+      if (e.message.includes("비밀번호")) {
+        setLogin({ busy: false, error: "비밀번호가 올바르지 않습니다", offline: false });
+      } else {
+        setLogin({ busy: false, error: `서버 연결 오류: ${e.message}`, offline: true });
+      }
+    }
+  };
+
+  // 서버 미설정/오프라인일 때 검증 없이 로컬로 진입
+  const handleOffline = (name, password) => {
+    setAuth({ name: name || "사용자", password: password || "" });
+    setLogin({ busy: false, error: "", offline: false });
+  };
+
+  const logout = () => {
+    setAuth(null);
+    setCloud({ status: "", msg: "" });
+    setTab("cal");
+  };
+
+  // 설정에서 수동 백업
+  const doBackup = async () => {
+    if (!auth) return;
     setCloud({ status: "saving", msg: "" });
     try {
-      await backupToCloud(pw, snapshot());
+      await backupToCloud(auth.name, auth.password, snapshot());
       setCloud({ status: "saved", msg: "" });
     } catch (e) {
       setCloud({ status: "error", msg: e.message });
     }
   };
 
+  // 복구: 비밀번호 다시 입력 → 클라우드 데이터로 덮어쓰기
   const doRestore = async () => {
-    if (!backupPassword) { setCloud({ status: "error", msg: "비밀번호를 입력하세요" }); return; }
-    if (!window.confirm("클라우드 백업으로 이 기기의 기록을 덮어씁니다. 계속할까요?")) return;
+    if (!auth) return;
+    const pw = window.prompt("복구하려면 비밀번호를 다시 입력하세요");
+    if (pw == null || pw === "") return;
     setCloud({ status: "restoring", msg: "" });
     try {
-      const data = await restoreFromCloud(backupPassword);
+      const data = await restoreFromCloud(auth.name, pw);
       if (!data) { setCloud({ status: "error", msg: "클라우드에 백업이 없습니다" }); return; }
-      if (data.entries) setEntries(data.entries);
-      if (data.account != null) setAccount(data.account);
-      if (data.defaultStart) setDefaultStart(data.defaultStart);
-      if (data.defaultEnd) setDefaultEnd(data.defaultEnd);
-      if (typeof data.showHolidays === "boolean") setShowHolidays(data.showHolidays);
+      applyData(data);
       setCloud({ status: "restored", msg: "" });
     } catch (e) {
       setCloud({ status: "error", msg: e.message });
     }
   };
 
-  // 변경되면 자동 백업 (비밀번호가 설정된 경우). 첫 렌더에서는 건너뛰어
-  // 새 기기에서 빈 데이터로 클라우드를 덮어쓰지 않도록 한다.
-  const pwRef = useRef(backupPassword);
-  useEffect(() => { pwRef.current = backupPassword; }, [backupPassword]);
+  // 변경되면 자동 백업. 첫 렌더에서는 건너뛰어 빈 데이터로 클라우드를 덮어쓰지 않게 한다.
+  const authRef = useRef(auth);
+  useEffect(() => { authRef.current = auth; }, [auth]);
   const didMount = useRef(false);
   useEffect(() => {
     if (!didMount.current) { didMount.current = true; return; }
-    const pw = pwRef.current;
-    if (!pw) return;
+    const a = authRef.current;
+    if (!a || !a.password) return; // 오프라인 진입(비밀번호 없음)이면 자동 백업 안 함
     const snap = { entries, account, defaultStart, defaultEnd, showHolidays };
     const t = setTimeout(async () => {
       setCloud({ status: "saving", msg: "" });
-      try { await backupToCloud(pw, snap); setCloud({ status: "saved", msg: "" }); }
+      try { await backupToCloud(a.name, a.password, snap); setCloud({ status: "saved", msg: "" }); }
       catch (e) { setCloud({ status: "error", msg: e.message }); }
     }, 1500);
     return () => clearTimeout(t);
@@ -145,9 +178,22 @@ export default function App() {
 
   const draftHours = hoursOf(draft);
 
+  // 로그인 전에는 게이트 화면만 표시
+  if (!auth) {
+    return (
+      <LoginScreen
+        onSubmit={handleLogin}
+        onOffline={handleOffline}
+        busy={login.busy}
+        error={login.error}
+        showOffline={login.offline}
+      />
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.ink,
-      fontFamily: "-apple-system, 'Apple SD Gothic Neo', 'Pretendard', system-ui, sans-serif",
+      fontFamily: FONT,
       padding: "16px 16px 88px", boxSizing: "border-box" }}>
       <div style={{ maxWidth: 460, margin: "0 auto" }}>
 
@@ -272,22 +318,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* 클라우드 백업 */}
+            {/* 클라우드 백업 / 계정 */}
             <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
               <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>클라우드 백업</div>
-              <div style={{ fontSize: 12, color: C.sub, lineHeight: 1.5, marginBottom: 12 }}>
-                비밀번호를 정하면 기록이 자동으로 클라우드에 백업됩니다. 폰을 바꾸거나
-                데이터가 사라졌을 때 같은 비밀번호로 복구하세요.
+              <div style={{ fontSize: 13, color: C.sub, marginBottom: 12 }}>
+                로그인 계정: <b style={{ color: C.ink }}>{auth.name}</b>
+                {!auth.password && <span style={{ color: C.sun }}> (오프라인 — 자동 백업 꺼짐)</span>}
               </div>
 
-              <div style={{ fontSize: 12, color: C.sub, fontWeight: 700, marginBottom: 6 }}>백업 비밀번호</div>
-              <input type="password" value={backupPassword} onChange={(e) => setBackupPassword(e.target.value)}
-                placeholder="백업 비밀번호" autoComplete="off"
-                style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${C.line}`, borderRadius: 10,
-                  padding: "10px 12px", fontSize: 14, marginBottom: 12, color: C.ink, background: C.bg }} />
-
               <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => doBackup(backupPassword)}
+                <button onClick={doBackup}
                   style={{ ...primaryBtn, flex: 1, padding: "12px 0", fontSize: 15 }}>
                   지금 백업
                 </button>
@@ -307,10 +347,15 @@ export default function App() {
                   {cloud.status === "error" && `오류: ${cloud.msg}`}
                 </div>
               )}
+
+              <button onClick={logout} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: "11px 0",
+                fontSize: 14, color: C.sub }}>
+                로그아웃
+              </button>
             </div>
 
             <div style={{ fontSize: 12, color: C.sub, textAlign: "center", lineHeight: 1.6 }}>
-              입력한 근무 기록과 설정은 이 기기에 자동 저장됩니다.
+              기록은 이 기기에 저장되고, 로그인하면 클라우드에 자동 백업됩니다.
             </div>
           </>
         )}
