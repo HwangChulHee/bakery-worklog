@@ -71,7 +71,10 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                     {/* 근무시간/휴무를 남은 공간 가운데에 */}
                     <span style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
                       {isOff
-                        ? <span style={{ fontSize: 14, fontWeight: 800, color: C.off }}>휴무</span>
+                        ? <span style={{ display: "inline-flex", alignItems: "center", gap: 2,
+                            fontSize: 14, fontWeight: 800, color: C.off }}>
+                            <span style={{ fontSize: 11, lineHeight: 1 }}>🛌</span>휴무
+                          </span>
                         : e && (
                           <span style={{ display: "inline-flex", alignItems: "center", gap: 2,
                             fontSize: 16, fontWeight: 800, color: C.honeyDark }}>
