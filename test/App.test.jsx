@@ -222,6 +222,26 @@ describe("주간 보기", () => {
   });
 });
 
+describe("뒤로가기(Android)", () => {
+  it("설정에서 뒤로가기 누르면 달력으로 돌아온다", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    expect(screen.getByText("기본 출근시간")).toBeInTheDocument();
+    act(() => { window.dispatchEvent(new PopStateEvent("popstate")); });
+    expect(screen.getByText("정리본")).toBeInTheDocument();
+    expect(screen.queryByText("기본 출근시간")).not.toBeInTheDocument();
+  });
+
+  it("입력 시트에서 뒤로가기 누르면 시트가 닫힌다", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "6월 2일" }));
+    expect(screen.getByRole("button", { name: "저장" })).toBeInTheDocument();
+    act(() => { window.dispatchEvent(new PopStateEvent("popstate")); });
+    expect(screen.queryByRole("button", { name: "저장" })).not.toBeInTheDocument();
+    expect(screen.getByText("정리본")).toBeInTheDocument();
+  });
+});
+
 describe("로그인 게이트", () => {
   it("로그인 안 된 상태면 로그인 화면이 뜨고 달력은 안 보인다", () => {
     localStorage.removeItem("auth");

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { restoreFromCloud } from "./cloud";
 import { C, FONT, iconBtn, primaryBtn } from "./theme";
 import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary } from "./worklog";
@@ -158,6 +158,30 @@ export default function App() {
     try { await installEvt.userChoice; } catch { /* 무시 */ }
     setInstallEvt(null);
   };
+
+  // Android 뒤로가기: 설정/입력시트가 열려 있으면 앱 종료 대신 그것부터 닫기
+  const modalOpen = editing != null || tab === "settings";
+  const editingRef = useRef(editing);
+  const tabRef = useRef(tab);
+  const poppedRef = useRef(false);
+  useEffect(() => { editingRef.current = editing; }, [editing]);
+  useEffect(() => { tabRef.current = tab; }, [tab]);
+  useEffect(() => {
+    if (!modalOpen) return;
+    try { window.history.pushState({ bwModal: true }, ""); } catch { /* 무시 */ }
+    const onPop = () => {
+      poppedRef.current = true;
+      if (editingRef.current != null) setEditing(null);
+      else setTab("cal");
+    };
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      // UI로 닫은 경우(뒤로가기 아님) 우리가 추가한 히스토리 항목 제거
+      if (!poppedRef.current) { try { window.history.back(); } catch { /* 무시 */ } }
+      poppedRef.current = false;
+    };
+  }, [modalOpen]);
 
   const buildText = () => buildSummary({ entries, year, month, account });
   const copyText = async () => {
