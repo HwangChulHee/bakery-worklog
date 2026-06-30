@@ -46,6 +46,7 @@ export default function App() {
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
   const [login, setLogin] = useState({ busy: false, error: "", offline: false });
   const [booting, setBooting] = useState(true);
+  const [installEvt, setInstallEvt] = useState(null); // 설치 가능 시 beforeinstallprompt 이벤트
 
   const weeks = getWeeks(year, month);
   const monthTotal = wMonthTotal(entries, year, month);
@@ -139,6 +140,25 @@ export default function App() {
     return () => clearTimeout(t);
   }, []);
 
+  // PWA 설치 가능 시 이벤트 보관 → 앱 내 "설치" 버튼으로 사용
+  useEffect(() => {
+    const onBIP = (e) => { e.preventDefault(); setInstallEvt(e); };
+    const onInstalled = () => setInstallEvt(null);
+    window.addEventListener("beforeinstallprompt", onBIP);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBIP);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  const installApp = async () => {
+    if (!installEvt) return;
+    installEvt.prompt();
+    try { await installEvt.userChoice; } catch { /* 무시 */ }
+    setInstallEvt(null);
+  };
+
   const buildText = () => buildSummary({ entries, year, month, account });
   const copyText = async () => {
     try {
@@ -162,6 +182,15 @@ export default function App() {
 
         {tab === "cal" && (
           <>
+            {/* 설치 가능할 때만 보이는 설치 버튼 */}
+            {installEvt && (
+              <button onClick={installApp} style={{ width: "100%", marginBottom: 10, padding: "12px 14px",
+                borderRadius: 12, border: "none", cursor: "pointer", background: C.honey, color: "#fff",
+                fontSize: 14, fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>📲 홈 화면에 앱으로 설치</span>
+                <span style={{ fontSize: 13, opacity: 0.9 }}>설치 ›</span>
+              </button>
+            )}
             {/* 상단: 보기 토글 + 설정 */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <div style={{ display: "flex", background: C.card, border: `1px solid ${C.line}`, borderRadius: 10, overflow: "hidden" }}>
