@@ -145,12 +145,12 @@ describe("근무 입력 흐름", () => {
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-2"]).toBeUndefined();
   });
 
-  it("자주 쓰는 퇴근시간 버튼으로 시간을 바꿔 저장", () => {
+  it("퇴근시간을 바꿔 저장하면 반영된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: /^6월 3일/ })); // 6/3(수), 지방선거일이어도 입력 가능
-    // 시트 안에서 14:00 → 표기 "2:00" 버튼
-    const sheetBtn = screen.getByRole("button", { name: "2:00" });
-    fireEvent.click(sheetBtn);
+    // 시트의 시간 입력칸: [0]=출근, [1]=퇴근
+    const timeInputs = document.querySelectorAll('input[type="time"]');
+    fireEvent.change(timeInputs[1], { target: { value: "14:00" } });
     fireEvent.click(screen.getByRole("button", { name: "저장" }));
     expect(document.body.textContent).toContain("6/3(수) 8:30~2:00(5.5h)");
   });
@@ -191,6 +191,25 @@ describe("월 이동", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "◀" }));
     expect(screen.getByText("5월 근무")).toBeInTheDocument();
+  });
+});
+
+describe("주간 보기", () => {
+  it("주간으로 바꾸면 그 주 날짜와 근무시간을 보여준다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-15": { start: "08:30", end: "13:30" } }));
+    renderApp(); // 시스템 시간 2026-06-15 (월)
+    fireEvent.click(screen.getByRole("button", { name: "주간" }));
+    expect(document.body.textContent).toContain("6/15"); // 그 주에 포함
+    expect(document.body.textContent).toContain("8:30~1:30"); // 그날 근무시간
+    expect(document.body.textContent).toContain("이번 주 총 근무");
+  });
+
+  it("주간 보기에서 날짜를 눌러 저장할 수 있다", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "주간" }));
+    fireEvent.click(screen.getByRole("button", { name: "6월 16일" })); // 6/16(화)
+    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    expect(JSON.parse(localStorage.getItem("entries"))["2026-6-16"]).toEqual({ start: "08:30", end: "13:30" });
   });
 });
 

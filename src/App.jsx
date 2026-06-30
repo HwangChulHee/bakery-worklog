@@ -31,8 +31,6 @@ function useLocalStorage(key, initial) {
   return [val, set];
 }
 
-const QUICK_ENDS = ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30"];
-
 // 하루 1번 자동백업 판단용
 const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 const readLastBackup = () => { try { return localStorage.getItem("lastBackupDate") || ""; } catch { return ""; } };
@@ -52,7 +50,12 @@ export default function App() {
   const [auth, setAuth] = useLocalStorage("auth", null); // { name, password } | null
 
   const [tab, setTab] = useState("cal"); // "cal" | "settings"
-  const [editing, setEditing] = useState(null); // day number or null
+  const [view, setView] = useState("month"); // "month" | "week"
+  const [editing, setEditing] = useState(null); // { y, m, d } | null
+  const [weekAnchor, setWeekAnchor] = useState(() => {
+    const t = new Date();
+    return { y: t.getFullYear(), m: t.getMonth(), d: t.getDate() };
+  });
   const [draft, setDraft] = useState({ start: defaultStart, end: defaultEnd });
   const [copied, setCopied] = useState(false);
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
@@ -64,28 +67,49 @@ export default function App() {
   const weekSum = (week) => wWeekSum(entries, year, month, week);
   const monthTotal = wMonthTotal(entries, year, month);
 
-  const openEditor = (d) => {
-    const e = entries[keyOf(d)];
+  const editKey = editing ? wKeyOf(editing.y, editing.m, editing.d) : null;
+
+  const openEditor = (y, m, d) => {
+    const e = entries[wKeyOf(y, m, d)];
     // 휴무({off:true})는 시간이 없으니 기본값으로 시작
     setDraft(e && e.start ? { start: e.start, end: e.end } : { start: defaultStart, end: defaultEnd });
-    setEditing(d);
+    setEditing({ y, m, d });
   };
   const save = () => {
-    setEntries((p) => ({ ...p, [keyOf(editing)]: { start: draft.start, end: draft.end } }));
+    setEntries((p) => ({ ...p, [editKey]: { start: draft.start, end: draft.end } }));
     setEditing(null);
   };
   const markOff = () => {
-    setEntries((p) => ({ ...p, [keyOf(editing)]: { off: true } }));
+    setEntries((p) => ({ ...p, [editKey]: { off: true } }));
     setEditing(null);
   };
   const removeDay = () => {
-    setEntries((p) => { const n = { ...p }; delete n[keyOf(editing)]; return n; });
+    setEntries((p) => { const n = { ...p }; delete n[editKey]; return n; });
     setEditing(null);
   };
   const shiftMonth = (dir) => {
     let m = month + dir, y = year;
     if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
     setMonth(m); setYear(y);
+  };
+
+  // 주간 보기: 앵커가 속한 주(일~토)
+  const anchorDate = new Date(weekAnchor.y, weekAnchor.m, weekAnchor.d);
+  const weekStart = new Date(anchorDate);
+  weekStart.setDate(anchorDate.getDate() - anchorDate.getDay());
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const dt = new Date(weekStart);
+    dt.setDate(weekStart.getDate() + i);
+    return dt;
+  });
+  const weekViewTotal = weekDays.reduce((s, dt) => {
+    const e = entries[wKeyOf(dt.getFullYear(), dt.getMonth(), dt.getDate())];
+    return e ? s + hoursOf(e) : s;
+  }, 0);
+  const shiftWeek = (dir) => {
+    const dt = new Date(weekStart);
+    dt.setDate(weekStart.getDate() + dir * 7);
+    setWeekAnchor({ y: dt.getFullYear(), m: dt.getMonth(), d: dt.getDate() });
   };
 
   // ── 클라우드 동기화 / 인증 ──────────────────────────────
@@ -238,10 +262,22 @@ export default function App() {
 
         {tab === "cal" && (
           <>
-            {/* 상단: 설정 버튼 */}
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+            {/* 상단: 보기 토글 + 설정 */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ display: "flex", background: C.card, border: `1px solid ${C.line}`, borderRadius: 10, overflow: "hidden" }}>
+                {[["month", "월간"], ["week", "주간"]].map(([k, label]) => (
+                  <button key={k} onClick={() => setView(k)} style={{
+                    padding: "8px 16px", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 800,
+                    background: view === k ? C.honey : "transparent", color: view === k ? "#fff" : C.sub }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
               <button onClick={() => setTab("settings")} aria-label="설정" style={iconBtn}>⚙</button>
             </div>
+
+            {view === "month" && (
+            <>
             {/* 월 이동 헤더 */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <button onClick={() => shiftMonth(-1)} style={navBtn}>◀</button>
@@ -281,7 +317,7 @@ export default function App() {
                       const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
                       const dayColor = hol ? C.sun : di === 0 ? C.sun : di === 6 ? C.sat : C.ink;
                       return (
-                        <button key={di} onClick={() => openEditor(d)} title={hol || undefined}
+                        <button key={di} onClick={() => openEditor(year, month, d)} title={hol || undefined}
                           aria-label={`${month + 1}월 ${d}일${isOff ? " 휴무" : ""}${hol ? ` ${hol}` : ""}`} style={{
                           aspectRatio: "1 / 1.05", borderRadius: 10, cursor: "pointer", overflow: "hidden",
                           border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
@@ -309,6 +345,61 @@ export default function App() {
                 );
               })}
             </div>
+            </>
+            )}
+
+            {view === "week" && (
+            <>
+            {/* 주 이동 헤더 */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <button onClick={() => shiftWeek(-1)} style={navBtn}>◀</button>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 13, color: C.sub, letterSpacing: 1 }}>주간</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>
+                  {weekDays[0].getMonth() + 1}/{weekDays[0].getDate()} ~ {weekDays[6].getMonth() + 1}/{weekDays[6].getDate()}
+                </div>
+              </div>
+              <button onClick={() => shiftWeek(1)} style={navBtn}>▶</button>
+            </div>
+
+            {/* 주 총합 */}
+            <div style={{ background: C.ink, color: "#fff", borderRadius: 16, padding: "14px 18px",
+              display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
+              <span style={{ fontSize: 14, opacity: 0.8 }}>이번 주 총 근무</span>
+              <span style={{ fontSize: 28, fontWeight: 800 }}>{fmtHours(weekViewTotal)}</span>
+            </div>
+
+            {/* 요일별 리스트 */}
+            <div style={{ background: C.card, borderRadius: 16, padding: 8, border: `1px solid ${C.line}`, marginBottom: 16 }}>
+              {weekDays.map((dt) => {
+                const y = dt.getFullYear(), m = dt.getMonth(), d = dt.getDate(), dow = dt.getDay();
+                const e = entries[wKeyOf(y, m, d)];
+                const isOff = !!(e && e.off);
+                const hol = showHolidays ? holidayName(y, m, d) : null;
+                const isToday = d === now.getDate() && m === now.getMonth() && y === now.getFullYear();
+                const dateColor = hol || dow === 0 ? C.sun : dow === 6 ? C.sat : C.ink;
+                return (
+                  <button key={`${y}-${m}-${d}`} onClick={() => openEditor(y, m, d)}
+                    aria-label={`${m + 1}월 ${d}일${isOff ? " 휴무" : ""}`} style={{
+                    width: "100%", boxSizing: "border-box", display: "flex", alignItems: "center",
+                    justifyContent: "space-between", gap: 8, padding: "12px 12px", marginBottom: 4,
+                    borderRadius: 12, cursor: "pointer", textAlign: "left",
+                    border: isToday ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
+                    background: isOff ? C.offBg : e ? C.workBg : C.card }}>
+                    <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: dateColor }}>{m + 1}/{d} ({DOW[dow]})</span>
+                      {hol && <span style={{ fontSize: 11, fontWeight: 700, color: C.sun }}>{hol}</span>}
+                    </span>
+                    <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap",
+                      color: isOff ? C.off : e ? C.honeyDark : C.line }}>
+                      {isOff ? "휴무" : e ? `${fmtClock(e.start)}~${fmtClock(e.end)} · ${fmtHours(hoursOf(e))}` : "—"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            </>
+            )}
 
             {/* 정리본 */}
             <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
@@ -414,7 +505,7 @@ export default function App() {
             borderRadius: "20px 20px 0 0", padding: "20px 18px 26px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <span style={{ fontSize: 20, fontWeight: 800 }}>
-                {month + 1}월 {editing}일 ({DOW[new Date(year, month, editing).getDay()]})
+                {editing.m + 1}월 {editing.d}일 ({DOW[new Date(editing.y, editing.m, editing.d).getDay()]})
               </span>
               <span style={{ fontSize: 22, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
             </div>
@@ -430,26 +521,11 @@ export default function App() {
               </label>
             </div>
 
-            <div style={{ fontSize: 12, color: C.sub, marginBottom: 8 }}>자주 쓰는 퇴근시간</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 18 }}>
-              {QUICK_ENDS.map((t) => {
-                const on = draft.end === t;
-                return (
-                  <button key={t} onClick={() => setDraft({ ...draft, end: t })} style={{
-                    padding: "12px 0", borderRadius: 12, fontSize: 16, fontWeight: 700, cursor: "pointer",
-                    border: on ? `2px solid ${C.honey}` : `1px solid ${C.line}`,
-                    background: on ? C.workBg : C.card, color: on ? C.honeyDark : C.ink }}>
-                    {fmtClock(t)}
-                  </button>
-                );
-              })}
-            </div>
-
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={markOff} style={{ ...ghostBtn, flex: 1 }}>휴무</button>
               <button onClick={save} style={{ ...primaryBtn, flex: 2, padding: "14px 0", fontSize: 16 }}>저장</button>
             </div>
-            {entries[keyOf(editing)] && (
+            {entries[editKey] && (
               <button onClick={removeDay} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: "10px 0",
                 fontSize: 14, color: C.sub, border: "none", background: "transparent" }}>
                 기록 지우기
