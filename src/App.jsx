@@ -375,9 +375,9 @@ export default function App() {
                         </div>
                         );
                       })}
-                      {/* 검산식 (오른쪽 정렬: 주차별 합계 + 덧셈, 한 줄 고정) */}
+                      {/* 검산식 (오른쪽 정렬: 주차별 합계 + 덧셈, 좁으면 아랫줄로) */}
                       <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.line}`,
-                        display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: 8 }}>
+                        display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
                         <span style={{ fontSize: 17, fontWeight: 800, color: C.sub, flexShrink: 0 }}>주차별 합계</span>
                         <span style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace",
                           fontSize: 16, fontWeight: 700, color: C.honeyDark,
@@ -389,10 +389,10 @@ export default function App() {
                   );
                 })}
 
-                {/* 전체 합계 (길면 줄바꿈) */}
+                {/* 전체 합계 (좁으면 검산식이 아랫줄로 — 모든 숫자 표시) */}
                 {breakdown.length > 1 && (
                   <div style={{ marginTop: 4, paddingTop: 14, borderTop: `2px solid ${C.line}`,
-                    display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                    display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 21, fontWeight: 800, flexShrink: 0 }}>합계</span>
                     <span style={{ background: C.honey, color: "#fff", borderRadius: 10, padding: "8px 14px",
                       fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 700,
