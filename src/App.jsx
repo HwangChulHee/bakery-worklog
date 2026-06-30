@@ -239,11 +239,14 @@ export default function App() {
     return runs.map((r) => (r.c > 1 ? `${fmtN(r.v)}×${r.c}` : fmtN(r.v))).join(" + ");
   };
 
-  // 오늘 상태 (상단 배너) — 입력 전 / 근무 N시간 / 휴무
+  // 오늘 상태 (상단 배너) — 입력 전 / 주말 / 근무 N시간 / 휴무
   const todayEntry = entries[wKeyOf(now.getFullYear(), now.getMonth(), now.getDate())];
   const todayLabel = `오늘 · ${now.getMonth() + 1}/${now.getDate()} (${DOW[now.getDay()]})`;
+  const isWeekend = now.getDay() === 0 || now.getDay() === 6; // 토·일
   const todayStatus = !todayEntry
-    ? { text: "아직 입력 안 했어요", emoji: "✏️", color: C.honeyDark, bg: "#FFF4DE", border: C.honey }
+    ? (isWeekend
+        ? { text: "주말", emoji: "🌿", color: C.off, bg: C.offBg, border: C.off }
+        : { text: "아직 입력 안 했어요", emoji: "✏️", color: C.honeyDark, bg: "#FFF4DE", border: C.honey })
     : todayEntry.off
       ? { text: "휴무", emoji: "🛌", color: C.off, bg: C.offBg, border: C.off }
       : { text: `${fmtHours(hoursOf(todayEntry))} · ${fmtClock(todayEntry.start)}~${fmtClock(todayEntry.end)}`,

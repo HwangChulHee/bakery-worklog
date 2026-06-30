@@ -367,6 +367,12 @@ describe("오늘 상태 배너", () => {
     renderApp();
     expect(screen.getAllByText("휴무").length).toBeGreaterThan(0);
   });
+  it("오늘이 주말(기록 없음)이면 '주말'로 표시한다", () => {
+    vi.setSystemTime(new Date(2026, 5, 14, 9, 0, 0)); // 6/14 일요일
+    renderApp();
+    expect(screen.getByText("주말")).toBeInTheDocument();
+    expect(screen.queryByText("아직 입력 안 했어요")).not.toBeInTheDocument();
+  });
   it("배너를 누르면 오늘 입력창이 열린다", () => {
     renderApp();
     fireEvent.click(screen.getByText("아직 입력 안 했어요"));
