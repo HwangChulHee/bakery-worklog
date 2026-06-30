@@ -359,17 +359,27 @@ describe("입력 엣지 케이스 (검산 경고)", () => {
     expect(document.body.textContent).toContain("입력안함");       // 같은 주 평일들은 경고
   });
 
-  it("공휴일 평일(6/3 지방선거일)은 미입력이어도 경고하지 않는다", () => {
+  it("공휴일 평일(6/3 지방선거일)도 미입력이면 경고한다", () => {
     localStorage.setItem("entries", JSON.stringify({ "2026-6-1": { start: "08:30", end: "13:30" } }));
     renderApp();
-    expect(document.body.textContent).not.toContain("6/3 (수)"); // 공휴일은 경고 제외
-    expect(document.body.textContent).toContain("6/2 (화)");     // 일반 평일은 경고
+    expect(document.body.textContent).toContain("6/3 (수)"); // 공휴일도 근무 많아 경고 포함
+    expect(document.body.textContent).toContain("6/2 (화)");
   });
 
   it("이번 달 아직 안 온 평일은 경고하지 않는다", () => {
     localStorage.setItem("entries", JSON.stringify({ "2026-6-15": { start: "08:30", end: "13:30" } })); // 오늘
     renderApp();
     expect(document.body.textContent).not.toContain("입력안함"); // 6/16~ 미래는 경고 X
+  });
+
+  it("같은 근무시간이 반복되면 검산식을 곱하기로 압축한다", () => {
+    localStorage.setItem("entries", JSON.stringify({
+      "2026-6-1": { start: "08:30", end: "13:00" }, // 4.5
+      "2026-6-2": { start: "08:30", end: "13:00" }, // 4.5
+      "2026-6-3": { start: "08:30", end: "13:00" }, // 4.5
+    }));
+    renderApp();
+    expect(document.body.textContent).toContain("4.5×3 = 13.5h");
   });
 
   it("지난 달은 평일 공백을 모두 경고한다", () => {

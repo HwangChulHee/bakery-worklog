@@ -3,7 +3,6 @@ import { restoreFromCloud } from "./cloud";
 import { C, FONT, iconBtn, primaryBtn, ghostBtn } from "./theme";
 import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary, weeklyBreakdown } from "./worklog";
 import { hoursOf, fmtHours } from "./time";
-import { holidayName } from "./holidays";
 import { useLocalStorage } from "./useLocalStorage";
 import { useDailyBackup } from "./useDailyBackup";
 import LoginScreen from "./LoginScreen";
@@ -230,6 +229,15 @@ export default function App() {
   const breakdown = weeklyBreakdown(entries, year, month, upToDay);
   const breakdownTotal = breakdown.reduce((s, w) => s + w.total, 0);
   const fmtN = (h) => (Number.isInteger(h) ? `${h}` : h.toFixed(1));
+  // 같은 값이 연속되면 곱하기로 압축 (예: 4.5+4.5+4.5 → 4.5×3)
+  const compressEq = (nums) => {
+    const runs = [];
+    nums.forEach((n) => {
+      const last = runs[runs.length - 1];
+      if (last && last.v === n) last.c += 1; else runs.push({ v: n, c: 1 });
+    });
+    return runs.map((r) => (r.c > 1 ? `${fmtN(r.v)}×${r.c}` : fmtN(r.v))).join(" + ");
+  };
   const copyText = async () => {
     try {
       await navigator.clipboard.writeText(buildText());
@@ -328,7 +336,7 @@ export default function App() {
                   const rows = [
                     ...w.days.map((x) => ({ ...x, kind: "work" })),
                     ...w.offs.map((x) => ({ ...x, kind: "off" })),
-                    ...w.missing.filter((x) => !holidayName(year, month, x.d)).map((x) => ({ ...x, kind: "miss" })),
+                    ...w.missing.map((x) => ({ ...x, kind: "miss" })), // 공휴일도 근무가 많아 경고에 포함
                   ].sort((a, b) => a.d - b.d);
                   return (
                     <div key={i} style={{ marginBottom: 52 }}>
@@ -374,7 +382,7 @@ export default function App() {
                         <span style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace",
                           fontSize: 16, fontWeight: 700, color: C.honeyDark,
                           minWidth: 0, textAlign: "right", lineHeight: 1.5 }}>
-                          {w.hrs.map(fmtN).join(" + ")} = <b style={{ fontSize: 19 }}>{fmtHours(w.total)}</b>
+                          {compressEq(w.hrs)} = <b style={{ fontSize: 19 }}>{fmtHours(w.total)}</b>
                         </span>
                       </div>
                     </div>
@@ -389,7 +397,7 @@ export default function App() {
                     <span style={{ background: C.honey, color: "#fff", borderRadius: 10, padding: "8px 14px",
                       fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 700,
                       minWidth: 0, textAlign: "right", lineHeight: 1.5 }}>
-                      {breakdown.map((w) => fmtN(w.total)).join(" + ")} = <b style={{ fontSize: 21 }}>{fmtHours(breakdownTotal)}</b>
+                      {compressEq(breakdown.map((w) => w.total))} = <b style={{ fontSize: 21 }}>{fmtHours(breakdownTotal)}</b>
                     </span>
                   </div>
                 )}
