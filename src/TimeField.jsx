@@ -11,19 +11,19 @@ const selStyle = {
   padding: "14px 8px", textAlign: "center", cursor: "pointer",
 };
 
-export default function TimeField({ label, value, onChange }) {
+export default function TimeField({ label, value, onChange, disabled = false }) {
   const [h, m] = value.split(":").map(Number);
   // 직접 입력으로 들어온 5분 단위가 아닌 분도 목록에 보이게
   const mins = MINS.includes(m) ? MINS : [...MINS, m].sort((a, b) => a - b);
   return (
-    <div style={{ minWidth: 0 }}>
+    <div style={{ minWidth: 0, opacity: disabled ? 0.4 : 1 }}>
       <div style={{ fontSize: 14, color: C.sub, fontWeight: 700, marginBottom: 6 }}>{label}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <select aria-label={`${label} 시`} value={h} style={selStyle}
+        <select aria-label={`${label} 시`} value={h} style={selStyle} disabled={disabled}
           onChange={(e) => onChange(`${pad(Number(e.target.value))}:${pad(m)}`)}>
           {HOURS.map((x) => <option key={x} value={x}>{x}시</option>)}
         </select>
-        <select aria-label={`${label} 분`} value={m} style={selStyle}
+        <select aria-label={`${label} 분`} value={m} style={selStyle} disabled={disabled}
           onChange={(e) => onChange(`${pad(h)}:${pad(Number(e.target.value))}`)}>
           {mins.map((x) => <option key={x} value={x}>{pad(x)}분</option>)}
         </select>

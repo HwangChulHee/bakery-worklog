@@ -21,6 +21,14 @@ import SettingsView from "./SettingsView";
 
 const SPLASH_MS = 1100;
 
+// 두 기록이 동일한지(자동저장 시 불필요한 저장/토스트 방지)
+function sameEntry(a, b) {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  if (a.off || b.off) return !!a.off === !!b.off && (a.memo || "") === (b.memo || "");
+  return a.start === b.start && a.end === b.end && (a.memo || "") === (b.memo || "");
+}
+
 export default function App() {
   const now = new Date();
   // 월간/주간이 공유하는 단일 기준일
@@ -43,6 +51,7 @@ export default function App() {
   const [view, setView] = useState("month"); // "month" | "week"
   const [editing, setEditing] = useState(null); // { y, m, d } | null
   const [draft, setDraft] = useState({ start: defaultStart, end: defaultEnd, memo: "" });
+  const [mode, setMode] = useState("work"); // "work" | "off"
   const [copied, setCopied] = useState(false);
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
   const [login, setLogin] = useState({ busy: false, error: "", offline: false });
@@ -63,6 +72,7 @@ export default function App() {
       end: e && e.end ? e.end : defaultEnd,
       memo: (e && e.memo) || "",
     });
+    setMode(e && e.off ? "off" : "work");
     setEditing({ y, m, d });
   };
   // 되돌리기(Undo) 스낵바
@@ -89,9 +99,18 @@ export default function App() {
     }));
   };
   const memoVal = () => (draft.memo && draft.memo.trim() ? { memo: draft.memo.trim() } : {});
-  const save = () => applyEntry({ start: draft.start, end: draft.end, ...memoVal() }, "저장했어요");
-  const markOff = () => applyEntry({ off: true, ...memoVal() }, "휴무로 표시했어요");
+  // 현재 토글/입력값으로 만든 기록
+  const entryFromDraft = () => (mode === "off"
+    ? { off: true, ...memoVal() }
+    : { start: draft.start, end: draft.end, ...memoVal() });
+  const save = (value) => applyEntry(value, value.off ? "휴무로 표시했어요" : "저장했어요");
   const removeDay = () => applyEntry(null, "기록을 삭제했어요");
+  // 저장 버튼 없이 나가도 자동저장 (변경 없으면 그냥 닫기)
+  const closeEditor = () => {
+    const value = entryFromDraft();
+    if (sameEntry(entries[editKey], value)) setEditing(null);
+    else save(value);
+  };
 
   const shiftMonth = (dir) => {
     let m = month + dir, y = year;
@@ -205,15 +224,17 @@ export default function App() {
   // Android 뒤로가기: 모달이 열려 있으면 닫고, 홈에서는 두 번 눌러야 종료
   const editingRef = useRef(editing);
   const tabRef = useRef(tab);
+  const closeEditorRef = useRef(closeEditor);
   const armedRef = useRef(false);
   const [exitToast, setExitToast] = useState(false);
   useEffect(() => { editingRef.current = editing; }, [editing]);
   useEffect(() => { tabRef.current = tab; }, [tab]);
+  useEffect(() => { closeEditorRef.current = closeEditor; }); // 최신 draft/mode 반영
   useEffect(() => {
     const guard = () => { try { window.history.pushState({ guard: true }, ""); } catch { /* 무시 */ } };
     guard(); // 뒤로가기를 잡아낼 항목 1개 유지
     const onPop = () => {
-      if (editingRef.current != null) { setEditing(null); guard(); return; }   // 입력시트 닫기
+      if (editingRef.current != null) { closeEditorRef.current(); guard(); return; }   // 입력시트 닫기(자동저장)
       if (tabRef.current === "settings") { setTab("cal"); guard(); return; }    // 설정 닫기
       if (armedRef.current) { try { window.history.back(); } catch { /* 무시 */ } return; } // 두 번째 → 종료
       armedRef.current = true;                                                   // 첫 번째 → 안내
@@ -346,9 +367,9 @@ export default function App() {
       </div>
 
       {editing != null && (
-        <EditorSheet editing={editing} draft={draft} setDraft={setDraft}
-          draftHours={hoursOf(draft)} entry={entries[editKey] || null}
-          onSave={save} onMarkOff={markOff} onRemove={removeDay} onClose={() => setEditing(null)} />
+        <EditorSheet key={editKey} editing={editing} draft={draft} setDraft={setDraft}
+          mode={mode} setMode={setMode} draftHours={hoursOf(draft)} entry={entries[editKey] || null}
+          onSave={() => save(entryFromDraft())} onRemove={removeDay} onClose={closeEditor} />
       )}
 
       {snack && (

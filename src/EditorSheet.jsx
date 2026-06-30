@@ -4,10 +4,21 @@ import { fmtClock, fmtHours, hoursOf } from "./time";
 import { C, primaryBtn, ghostBtn } from "./theme";
 import TimeField from "./TimeField";
 
-// 날짜 입력 바텀시트
-export default function EditorSheet({ editing, draft, setDraft, draftHours, entry, onSave, onMarkOff, onRemove, onClose }) {
+// 상태 토글 버튼 스타일
+const toggleBtn = (active, kind) => ({
+  flex: 1, padding: "16px 0", borderRadius: 14, cursor: "pointer",
+  fontSize: 20, fontWeight: 800, display: "flex", alignItems: "center",
+  justifyContent: "center", gap: 8,
+  border: active ? "none" : `1px solid ${C.line}`,
+  background: active ? (kind === "work" ? C.honey : C.off) : C.card,
+  color: active ? "#fff" : C.sub,
+});
+
+// 날짜 입력 바텀시트 (근무/휴무 토글 → 그에 맞는 입력, 나가면 자동저장)
+export default function EditorSheet({ editing, draft, setDraft, mode, setMode, draftHours, entry, onSave, onRemove, onClose }) {
   const [confirming, setConfirming] = useState(false);
   const hasEntry = !!entry;
+  const isOff = mode === "off";
   const dateLabel = `${editing.m + 1}월 ${editing.d}일 (${DOW[new Date(editing.y, editing.m, editing.d).getDay()]})`;
   const recordLabel = entry
     ? (entry.off ? "휴무" : `${fmtClock(entry.start)}~${fmtClock(entry.end)} (${fmtHours(hoursOf(entry))})`)
@@ -20,30 +31,49 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, entr
         <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, width: "100%", maxWidth: 460,
           borderRadius: "20px 20px 0 0", padding: "20px 18px 26px" }}>
 
-          {/* 헤더: 날짜 + (삭제) */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          {/* 헤더: 날짜 + (기록 지우기) */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <span style={{ fontSize: 24, fontWeight: 800 }}>{dateLabel}</span>
             {hasEntry && (
-              <button onClick={() => setConfirming(true)} style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 12,
-                cursor: "pointer", fontSize: 17, fontWeight: 800,
-                color: C.sun, background: "#FCEBE9", border: "1px solid #F2C9C4" }}>
-                <span style={{ lineHeight: 1 }}>🗑️</span><span>삭제</span>
+              <button onClick={() => setConfirming(true)} style={{ background: "transparent",
+                border: "none", cursor: "pointer", fontSize: 15, fontWeight: 700,
+                color: C.sub, textDecoration: "underline", padding: 4 }}>
+                기록 지우기
               </button>
             )}
           </div>
 
-          {/* 근무시간 (라벨과 숫자 같은 크기, 한 줄) */}
-          <div style={{ background: C.workBg, borderRadius: 14, padding: "16px 0", marginBottom: 16,
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
-            <span style={{ fontSize: 24, fontWeight: 700, color: C.honeyDark }}>근무시간</span>
-            <span style={{ fontSize: 24, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
+          {/* 상태 토글: 근무 / 휴무 */}
+          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+            <button onClick={() => setMode("work")} style={toggleBtn(!isOff, "work")}>
+              <span style={{ lineHeight: 1 }}>🍞</span><span>근무</span>
+            </button>
+            <button onClick={() => setMode("off")} style={toggleBtn(isOff, "off")}>
+              <span style={{ lineHeight: 1 }}>🛌</span><span>휴무</span>
+            </button>
           </div>
 
-          {/* 시간 선택 */}
+          {/* 요약 카드: 근무시간 또는 쉬는 날 */}
+          {isOff ? (
+            <div style={{ background: C.offBg, borderRadius: 14, padding: "16px 0", marginBottom: 16,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <span style={{ lineHeight: 1, fontSize: 22 }}>🛌</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: C.off }}>쉬는 날</span>
+            </div>
+          ) : (
+            <div style={{ background: C.workBg, borderRadius: 14, padding: "16px 0", marginBottom: 16,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+              <span style={{ fontSize: 24, fontWeight: 700, color: C.honeyDark }}>근무시간</span>
+              <span style={{ fontSize: 24, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
+            </div>
+          )}
+
+          {/* 시간 선택 (휴무면 회색 비활성) */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 16 }}>
-            <TimeField label="출근" value={draft.start} onChange={(v) => setDraft({ ...draft, start: v })} />
-            <TimeField label="퇴근" value={draft.end} onChange={(v) => setDraft({ ...draft, end: v })} />
+            <TimeField label="출근" value={draft.start} disabled={isOff}
+              onChange={(v) => setDraft({ ...draft, start: v })} />
+            <TimeField label="퇴근" value={draft.end} disabled={isOff}
+              onChange={(v) => setDraft({ ...draft, end: v })} />
           </div>
 
           {/* 메모 */}
@@ -54,17 +84,11 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, entr
               border: `1px solid ${C.note}`, borderRadius: 12, padding: "12px 12px",
               fontSize: 18, color: C.ink, background: C.noteBg, fontFamily: "inherit", outline: "none" }} />
 
-          {/* 주요 동작 (동일 크기) */}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={onMarkOff} style={{ ...ghostBtn, flex: 1, fontSize: 18, padding: "15px 0",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              <span style={{ lineHeight: 1 }}>🛌</span><span>휴무</span>
-            </button>
-            <button onClick={onSave} style={{ ...primaryBtn, flex: 1, fontSize: 18, padding: "15px 0",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              <span style={{ lineHeight: 1 }}>💾</span><span>저장</span>
-            </button>
-          </div>
+          {/* 저장 (전폭, 단일) */}
+          <button onClick={onSave} style={{ ...primaryBtn, width: "100%", fontSize: 20, padding: "17px 0",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <span style={{ lineHeight: 1 }}>💾</span><span>저장</span>
+          </button>
         </div>
       </div>
 
