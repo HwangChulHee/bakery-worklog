@@ -325,28 +325,34 @@ export default function App() {
                     ...w.offs.map((x) => ({ ...x, off: true })),
                   ].sort((a, b) => a.d - b.d);
                   return (
-                    <div key={i} style={{ marginBottom: 16 }}>
-                      {/* 주 헤더: N주 ... 합계 */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <span style={{ fontSize: 18, fontWeight: 800, color: C.honeyDark,
-                          background: C.workBg, borderRadius: 8, padding: "4px 14px" }}>{i + 1}주차</span>
-                        <span style={{ fontSize: 22, fontWeight: 800, color: C.honeyDark }}>{fmtHours(w.total)}</span>
+                    <div key={i} style={{ marginBottom: 22 }}>
+                      {/* 주 헤더: N주차 ... 합계 */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ fontSize: 19, fontWeight: 800, color: C.honeyDark,
+                          background: C.workBg, borderRadius: 8, padding: "5px 16px" }}>{i + 1}주차</span>
+                        <span style={{ fontSize: 24, fontWeight: 800, color: C.honeyDark }}>{fmtHours(w.total)}</span>
                       </div>
-                      {/* 날짜순 나열 */}
-                      {rows.map((r) => (
-                        <div key={r.d} style={{ display: "flex", justifyContent: "space-between",
-                          alignItems: "baseline", fontSize: 20, padding: "4px 4px",
-                          color: r.off ? C.off : C.ink }}>
-                          <span>
-                            {r.off ? "🛌 " : ""}{month + 1}/{r.d}({r.dow})
-                            {r.memo && <span style={{ color: C.note, fontSize: 16, marginLeft: 6 }}>📝 {r.memo}</span>}
-                          </span>
-                          <span style={{ fontWeight: 700 }}>{r.off ? "휴무" : `${fmtN(r.hours)}h`}</span>
+                      {/* 날짜순 나열 (메모는 아랫줄) */}
+                      {rows.map((r, ri) => (
+                        <div key={r.d} style={{ padding: "9px 2px",
+                          borderTop: ri === 0 ? "none" : `1px solid ${C.bg}` }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                            <span style={{ fontSize: 22, fontWeight: 600, color: r.off ? C.off : C.ink }}>
+                              {month + 1}/{r.d} ({r.dow})
+                            </span>
+                            <span style={{ fontSize: 22, fontWeight: 800, color: r.off ? C.off : C.honeyDark }}>
+                              {r.off ? "휴무" : `${fmtN(r.hours)}h`}
+                            </span>
+                          </div>
+                          {r.memo && (
+                            <div style={{ marginTop: 4, fontSize: 17, fontWeight: 600, color: C.note,
+                              lineHeight: 1.4 }}>{r.memo}</div>
+                          )}
                         </div>
                       ))}
                       {/* 검산식 */}
-                      <div style={{ marginTop: 6, paddingTop: 6, borderTop: `1px dashed ${C.line}`,
-                        fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 18, color: C.sub }}>
+                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.line}`,
+                        fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 19, color: C.sub }}>
                         {w.hrs.map(fmtN).join(" + ")} = <b style={{ color: C.honeyDark }}>{fmtHours(w.total)}</b>
                       </div>
                     </div>
@@ -355,11 +361,11 @@ export default function App() {
 
                 {/* 전체 합계 */}
                 {breakdown.length > 1 && (
-                  <div style={{ marginTop: 8, paddingTop: 12, borderTop: `2px solid ${C.line}`,
+                  <div style={{ marginTop: 4, paddingTop: 14, borderTop: `2px solid ${C.line}`,
                     display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 19, fontWeight: 800 }}>합계</span>
-                    <span style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 18, color: C.sub }}>
-                      {breakdown.map((w) => fmtN(w.total)).join(" + ")} = <b style={{ color: C.honeyDark, fontSize: 22 }}>{fmtHours(breakdownTotal)}</b>
+                    <span style={{ fontSize: 21, fontWeight: 800 }}>합계</span>
+                    <span style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 19, color: C.sub }}>
+                      {breakdown.map((w) => fmtN(w.total)).join(" + ")} = <b style={{ color: C.honeyDark, fontSize: 24 }}>{fmtHours(breakdownTotal)}</b>
                     </span>
                   </div>
                 )}

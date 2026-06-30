@@ -222,7 +222,7 @@ describe("주차별 계산", () => {
     renderApp();
     expect(screen.getByText("주차별 계산")).toBeInTheDocument();
     expect(document.body.textContent).toContain("5 + 4.5 = 9.5h"); // 검산식
-    expect(document.body.textContent).toContain("6/3(수)");        // 빠진 날(날짜순 나열)
+    expect(document.body.textContent).toContain("6/3 (수)");       // 빠진 날(날짜순 나열)
     expect(document.body.textContent).toContain("병원");           // 사유 메모
   });
 });
