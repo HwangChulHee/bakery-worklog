@@ -349,11 +349,12 @@ export default function App() {
                           )}
                         </div>
                       ))}
-                      {/* 검산식 (오른쪽 강조 칩) */}
+                      {/* 검산식 (오른쪽 강조 칩, 길면 줄바꿈) */}
                       <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
                         <span style={{ background: C.workBg, border: `1px solid ${C.honey}`, borderRadius: 10,
                           padding: "8px 16px", fontFamily: "'SF Mono', ui-monospace, Menlo, monospace",
-                          fontSize: 20, fontWeight: 700, color: C.honeyDark }}>
+                          fontSize: 20, fontWeight: 700, color: C.honeyDark,
+                          maxWidth: "100%", whiteSpace: "normal", textAlign: "right", lineHeight: 1.5 }}>
                           {w.hrs.map(fmtN).join(" + ")} = <b style={{ fontSize: 23 }}>{fmtHours(w.total)}</b>
                         </span>
                       </div>
@@ -361,13 +362,14 @@ export default function App() {
                   );
                 })}
 
-                {/* 전체 합계 */}
+                {/* 전체 합계 (길면 줄바꿈) */}
                 {breakdown.length > 1 && (
                   <div style={{ marginTop: 4, paddingTop: 14, borderTop: `2px solid ${C.line}`,
-                    display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 21, fontWeight: 800 }}>합계</span>
+                    display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 21, fontWeight: 800, flexShrink: 0 }}>합계</span>
                     <span style={{ background: C.honey, color: "#fff", borderRadius: 10, padding: "8px 16px",
-                      fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 19, fontWeight: 700 }}>
+                      fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 19, fontWeight: 700,
+                      maxWidth: "100%", whiteSpace: "normal", textAlign: "right", lineHeight: 1.5 }}>
                       {breakdown.map((w) => fmtN(w.total)).join(" + ")} = <b style={{ fontSize: 24 }}>{fmtHours(breakdownTotal)}</b>
                     </span>
                   </div>
