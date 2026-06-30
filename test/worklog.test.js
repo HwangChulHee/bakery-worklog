@@ -208,6 +208,19 @@ describe("weeklyBreakdown", () => {
     const entries = { "2026-6-1": { off: true } };
     expect(weeklyBreakdown(entries, 2026, 5, 31)).toEqual([]);
   });
+  it("주차별 합계의 총합은 월 총합(monthTotal)과 정확히 일치한다", () => {
+    const entries = {
+      "2026-6-1": { start: "08:30", end: "13:30" }, // 5
+      "2026-6-3": { off: true },                    // 0 (휴무)
+      "2026-6-8": { start: "08:30", end: "14:00" }, // 5.5
+      "2026-6-9": { start: "09:00", end: "13:00" }, // 4
+      "2026-6-20": { start: "08:00", end: "12:30" }, // 4.5 (토요일 근무)
+    };
+    const bd = weeklyBreakdown(entries, 2026, 5);
+    const sum = bd.reduce((s, w) => s + w.total, 0);
+    expect(sum).toBe(monthTotal(entries, 2026, 5));
+    expect(sum).toBe(19); // 5 + 5.5 + 4 + 4.5
+  });
 });
 
 describe("DOW", () => {

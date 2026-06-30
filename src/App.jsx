@@ -222,10 +222,10 @@ export default function App() {
   }, []);
 
   const buildText = () => buildSummary({ entries, year, month, account });
-  // 미입력 평일 경고 범위: 이번 달은 오늘까지, 지난 달은 전체, 다음 달은 없음
+  // 미입력 평일 경고 범위: 이번 달은 "어제"까지(오늘은 아직 안 끝났으니 제외), 지난 달은 전체, 다음 달은 없음
   const isThisMonth = year === now.getFullYear() && month === now.getMonth();
   const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
-  const upToDay = isThisMonth ? now.getDate() : isPastMonth ? Infinity : 0;
+  const upToDay = isThisMonth ? now.getDate() - 1 : isPastMonth ? Infinity : 0;
   const breakdown = weeklyBreakdown(entries, year, month, upToDay);
   const breakdownTotal = breakdown.reduce((s, w) => s + w.total, 0);
   const fmtN = (h) => (Number.isInteger(h) ? `${h}` : h.toFixed(1));
