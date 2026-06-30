@@ -79,12 +79,24 @@ describe("탭 전환 / 설정", () => {
     expect(document.body.textContent).toContain("==>카카오뱅크(99988)");
   });
 
-  it("기본 출근/퇴근시간 변경이 localStorage 에 저장된다", () => {
+  it("요일별 기본 출근시간 변경이 localStorage(dayDefaults)에 저장된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    // 기본 선택 요일은 월(1)
     fireEvent.change(screen.getByLabelText("기본 출근시간 시"), { target: { value: "9" } });
     fireEvent.change(screen.getByLabelText("기본 출근시간 분"), { target: { value: "0" } });
-    expect(JSON.parse(localStorage.getItem("defaultStart"))).toBe("09:00");
+    expect(JSON.parse(localStorage.getItem("dayDefaults"))["1"].start).toBe("09:00");
+  });
+
+  it("요일 탭을 바꾸면 그 요일의 기본값만 바뀐다", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "수요일 기본값" })); // 수(3) 선택
+    fireEvent.change(screen.getByLabelText("기본 퇴근시간 시"), { target: { value: "15" } });
+    fireEvent.change(screen.getByLabelText("기본 퇴근시간 분"), { target: { value: "0" } });
+    const dd = JSON.parse(localStorage.getItem("dayDefaults"));
+    expect(dd["3"].end).toBe("15:00");
+    expect(dd["1"].end).toBe("13:30"); // 월요일은 그대로
   });
 });
 

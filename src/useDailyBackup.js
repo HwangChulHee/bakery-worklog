@@ -7,7 +7,7 @@ const writeLastBackup = (v) => { try { localStorage.setItem("lastBackupDate", v)
 
 // 클라우드 자동백업(하루 1번) + 수동 백업(force). 상태는 setCloud 로 보고.
 // 반환: flush(force) — 설정의 "지금 백업" 버튼이 flush(true) 로 호출.
-export function useDailyBackup({ auth, entries, account, defaultStart, defaultEnd, showHolidays, setCloud }) {
+export function useDailyBackup({ auth, entries, account, dayDefaults, showHolidays, setCloud }) {
   const authRef = useRef(auth);
   const snapRef = useRef(null);
   const dirtyRef = useRef(false);
@@ -15,8 +15,8 @@ export function useDailyBackup({ auth, entries, account, defaultStart, defaultEn
 
   useEffect(() => { authRef.current = auth; }, [auth]);
   useEffect(() => {
-    snapRef.current = { entries, account, defaultStart, defaultEnd, showHolidays };
-  }, [entries, account, defaultStart, defaultEnd, showHolidays]);
+    snapRef.current = { entries, account, dayDefaults, showHolidays };
+  }, [entries, account, dayDefaults, showHolidays]);
 
   const flush = useCallback(async (force = false) => {
     const a = authRef.current;
@@ -45,7 +45,7 @@ export function useDailyBackup({ auth, entries, account, defaultStart, defaultEn
     dirtyRef.current = true;
     const t = setTimeout(() => flush(false), 8000);
     return () => clearTimeout(t);
-  }, [entries, account, defaultStart, defaultEnd, showHolidays, flush]);
+  }, [entries, account, dayDefaults, showHolidays, flush]);
 
   // 앱을 백그라운드로 보내거나 닫을 때도 자동백업 시도(하루 1번 규칙 동일)
   useEffect(() => {

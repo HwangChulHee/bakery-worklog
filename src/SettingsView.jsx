@@ -1,5 +1,9 @@
+import { useState } from "react";
 import { C, iconBtn, ghostBtn } from "./theme";
 import TimeField from "./TimeField";
+
+const WEEKDAYS = [[1, "월"], [2, "화"], [3, "수"], [4, "목"], [5, "금"]];
+const BASE_DEF = { start: "08:30", end: "13:30" };
 
 // 회색톤 카드/버튼
 const card = { background: C.grayBg, borderRadius: 16, padding: 16, border: `1px solid ${C.grayLine}` };
@@ -21,10 +25,14 @@ function Section({ icon, title, children }) {
 
 // 설정 화면 (회색톤, 카테고리화)
 export default function SettingsView({
-  defaultStart, setDefaultStart, defaultEnd, setDefaultEnd,
+  dayDefaults, setDayDefaults,
   account, setAccount, showHolidays, setShowHolidays,
   auth, cloud, onBackup, onRestore, onLogout, onBack,
 }) {
+  const [selDow, setSelDow] = useState(1); // 편집 중인 요일(기본 월)
+  const cur = (dayDefaults && dayDefaults[selDow]) || BASE_DEF;
+  const updateDow = (field, v) =>
+    setDayDefaults((p) => ({ ...p, [selDow]: { ...((p && p[selDow]) || BASE_DEF), [field]: v } }));
   return (
     <>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
@@ -34,11 +42,25 @@ export default function SettingsView({
         </div>
       </div>
 
-      {/* 근무 기본값 */}
-      <Section icon="⏰" title="근무 기본값">
+      {/* 근무 기본값 (요일별) */}
+      <Section icon="⏰" title="근무 기본값 (요일별)">
+        {/* 요일 선택 탭 */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+          {WEEKDAYS.map(([d, label]) => (
+            <button key={d} onClick={() => setSelDow(d)} aria-label={`${label}요일 기본값`} style={{
+              flex: 1, padding: "10px 0", borderRadius: 10, cursor: "pointer", fontSize: 17, fontWeight: 800,
+              border: selDow === d ? "none" : `1px solid ${C.grayLine}`,
+              background: selDow === d ? C.gray : C.card, color: selDow === d ? "#fff" : C.gray }}>
+              {label}
+            </button>
+          ))}
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <TimeField label="기본 출근시간" value={defaultStart} onChange={setDefaultStart} />
-          <TimeField label="기본 퇴근시간" value={defaultEnd} onChange={setDefaultEnd} />
+          <TimeField label="기본 출근시간" value={cur.start} onChange={(v) => updateDow("start", v)} />
+          <TimeField label="기본 퇴근시간" value={cur.end} onChange={(v) => updateDow("end", v)} />
+        </div>
+        <div style={{ fontSize: 12, color: C.gray, marginTop: 8 }}>
+          선택한 요일에 새로 입력할 때 이 시간이 기본으로 채워져요.
         </div>
       </Section>
 

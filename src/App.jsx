@@ -20,6 +20,17 @@ import SettingsView from "./SettingsView";
    ──────────────────────────────────────────────────────────── */
 
 const SPLASH_MS = 1100;
+const BASE_DEF = { start: "08:30", end: "13:30" };
+
+// 기존 단일 기본값(defaultStart/End)을 월~금 요일별 기본값으로 시드(마이그레이션)
+function seedDayDefaults() {
+  let base = { ...BASE_DEF };
+  try {
+    const s = localStorage.getItem("defaultStart"), e = localStorage.getItem("defaultEnd");
+    base = { start: s ? JSON.parse(s) : BASE_DEF.start, end: e ? JSON.parse(e) : BASE_DEF.end };
+  } catch { /* 무시 */ }
+  return { 1: { ...base }, 2: { ...base }, 3: { ...base }, 4: { ...base }, 5: { ...base } };
+}
 
 export default function App() {
   const now = new Date();
@@ -34,15 +45,15 @@ export default function App() {
   // 자동저장 대상
   const [entries, setEntries] = useLocalStorage("entries", {}); // { "2026-6-1": {start,end} | {off:true} }
   const [account, setAccount] = useLocalStorage("account", "우리은행(01076004597)");
-  const [defaultStart, setDefaultStart] = useLocalStorage("defaultStart", "08:30");
-  const [defaultEnd, setDefaultEnd] = useLocalStorage("defaultEnd", "13:30");
+  const [dayDefaults, setDayDefaults] = useLocalStorage("dayDefaults", seedDayDefaults()); // {1..5:{start,end}}
+  const defaultFor = (dow) => dayDefaults[dow] || dayDefaults[1] || BASE_DEF; // 주말은 월요일 기본값 사용
   const [showHolidays, setShowHolidays] = useLocalStorage("showHolidays", true);
   const [auth, setAuth] = useLocalStorage("auth", null); // { name, password } | null
 
   const [tab, setTab] = useState("cal"); // "cal" | "settings"
   const [view, setView] = useState("month"); // "month" | "week"
   const [editing, setEditing] = useState(null); // { y, m, d } | null
-  const [draft, setDraft] = useState({ start: defaultStart, end: defaultEnd, memo: "" });
+  const [draft, setDraft] = useState({ start: BASE_DEF.start, end: BASE_DEF.end, memo: "" });
   const [mode, setMode] = useState("work"); // "work" | "off"
   const [copied, setCopied] = useState(false);
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
@@ -58,10 +69,11 @@ export default function App() {
   // ── 날짜 편집 ──────────────────────────────
   const openEditor = (y, m, d) => {
     const e = entries[wKeyOf(y, m, d)];
+    const def = defaultFor(new Date(y, m, d).getDay()); // 그 요일의 기본 시간
     // 휴무({off:true})는 시간이 없으니 기본값으로 시작
     setDraft({
-      start: e && e.start ? e.start : defaultStart,
-      end: e && e.end ? e.end : defaultEnd,
+      start: e && e.start ? e.start : def.start,
+      end: e && e.end ? e.end : def.end,
       memo: (e && e.memo) || "",
     });
     setMode(e && e.off ? "off" : "work");
@@ -125,14 +137,17 @@ export default function App() {
   };
 
   // ── 클라우드 백업(하루 1번) ──────────────────────────────
-  const flushBackup = useDailyBackup({ auth, entries, account, defaultStart, defaultEnd, showHolidays, setCloud });
+  const flushBackup = useDailyBackup({ auth, entries, account, dayDefaults, showHolidays, setCloud });
 
   const applyData = (data) => {
     if (!data) return;
     if (data.entries) setEntries(data.entries);
     if (data.account != null) setAccount(data.account);
-    if (data.defaultStart) setDefaultStart(data.defaultStart);
-    if (data.defaultEnd) setDefaultEnd(data.defaultEnd);
+    if (data.dayDefaults) setDayDefaults(data.dayDefaults);
+    else if (data.defaultStart || data.defaultEnd) { // 옛 백업 → 요일별로 마이그레이션
+      const base = { start: data.defaultStart || BASE_DEF.start, end: data.defaultEnd || BASE_DEF.end };
+      setDayDefaults({ 1: { ...base }, 2: { ...base }, 3: { ...base }, 4: { ...base }, 5: { ...base } });
+    }
     if (typeof data.showHolidays === "boolean") setShowHolidays(data.showHolidays);
   };
 
@@ -435,8 +450,7 @@ export default function App() {
 
         {tab === "settings" && (
           <SettingsView
-            defaultStart={defaultStart} setDefaultStart={setDefaultStart}
-            defaultEnd={defaultEnd} setDefaultEnd={setDefaultEnd}
+            dayDefaults={dayDefaults} setDayDefaults={setDayDefaults}
             account={account} setAccount={setAccount}
             showHolidays={showHolidays} setShowHolidays={setShowHolidays}
             auth={auth} cloud={cloud}
