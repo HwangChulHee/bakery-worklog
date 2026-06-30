@@ -41,7 +41,7 @@ export default function App() {
     const t = new Date();
     return { y: t.getFullYear(), m: t.getMonth(), d: t.getDate() };
   });
-  const [draft, setDraft] = useState({ start: defaultStart, end: defaultEnd });
+  const [draft, setDraft] = useState({ start: defaultStart, end: defaultEnd, memo: "" });
   const [copied, setCopied] = useState(false);
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
   const [login, setLogin] = useState({ busy: false, error: "", offline: false });
@@ -57,7 +57,11 @@ export default function App() {
   const openEditor = (y, m, d) => {
     const e = entries[wKeyOf(y, m, d)];
     // 휴무({off:true})는 시간이 없으니 기본값으로 시작
-    setDraft(e && e.start ? { start: e.start, end: e.end } : { start: defaultStart, end: defaultEnd });
+    setDraft({
+      start: e && e.start ? e.start : defaultStart,
+      end: e && e.end ? e.end : defaultEnd,
+      memo: (e && e.memo) || "",
+    });
     setEditing({ y, m, d });
   };
   // 되돌리기(Undo) 스낵바
@@ -83,8 +87,9 @@ export default function App() {
       const n = { ...p }; if (prev === undefined) delete n[key]; else n[key] = prev; return n;
     }));
   };
-  const save = () => applyEntry({ start: draft.start, end: draft.end }, "저장했어요");
-  const markOff = () => applyEntry({ off: true }, "휴무로 표시했어요");
+  const memoVal = () => (draft.memo && draft.memo.trim() ? { memo: draft.memo.trim() } : {});
+  const save = () => applyEntry({ start: draft.start, end: draft.end, ...memoVal() }, "저장했어요");
+  const markOff = () => applyEntry({ off: true, ...memoVal() }, "휴무로 표시했어요");
   const removeDay = () => applyEntry(null, "기록을 삭제했어요");
 
   const shiftMonth = (dir) => {

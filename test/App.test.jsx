@@ -154,6 +154,16 @@ describe("근무 입력 흐름", () => {
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-4"].start).toBe("09:00");
   });
 
+  it("날짜에 메모를 남기면 저장되고 주간 보기에 표시된다", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "6월 16일" })); // 이번 주(화)
+    fireEvent.change(screen.getByPlaceholderText("메모 (선택)"), { target: { value: "재고 정리" } });
+    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    expect(JSON.parse(localStorage.getItem("entries"))["2026-6-16"].memo).toBe("재고 정리");
+    fireEvent.click(screen.getByRole("button", { name: "주간" }));
+    expect(document.body.textContent).toContain("재고 정리");
+  });
+
   it("퇴근시간을 바꿔 저장하면 반영된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: /^6월 3일/ })); // 6/3(수), 지방선거일이어도 입력 가능

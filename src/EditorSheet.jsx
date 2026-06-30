@@ -17,10 +17,16 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, hasE
           <span style={{ fontSize: 22, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 18 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 14 }}>
           <TimeField label="출근" value={draft.start} onChange={(v) => setDraft({ ...draft, start: v })} />
           <TimeField label="퇴근" value={draft.end} onChange={(v) => setDraft({ ...draft, end: v })} />
         </div>
+
+        <textarea value={draft.memo} onChange={(e) => setDraft({ ...draft, memo: e.target.value })}
+          placeholder="메모 (선택)" rows={2}
+          style={{ width: "100%", boxSizing: "border-box", marginBottom: 16, resize: "none",
+            border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px",
+            fontSize: 15, color: C.ink, background: C.bg, fontFamily: "inherit", outline: "none" }} />
 
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={onMarkOff} style={{ ...ghostBtn, flex: 1 }}>휴무</button>

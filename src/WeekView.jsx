@@ -51,6 +51,11 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
               <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                 <span style={{ fontSize: 15, fontWeight: 800, color: dateColor }}>{m + 1}/{d} ({DOW[dow]})</span>
                 {hol && <span style={{ fontSize: 11, fontWeight: 700, color: C.sun }}>{hol}</span>}
+                {e && e.memo && (
+                  <span style={{ fontSize: 12, color: C.sub, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    📝 {e.memo}
+                  </span>
+                )}
               </span>
               <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap",
                 color: isOff ? C.off : e ? C.honeyDark : C.line }}>
