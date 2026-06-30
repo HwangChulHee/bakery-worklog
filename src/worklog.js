@@ -34,7 +34,8 @@ export function monthTotal(entries, year, month) {
 }
 
 // 주차별 계산용(검산): 일한 날 상세 + 그 주의 휴무(메모) + 미입력 평일(월~금) + 합계.
-// 일한 날이 있는 주만 포함. missing = 월~금 중 아무 기록 없는 날(d <= upToDay) → 실수 검토용.
+// 일한 날이 있는 주만 포함. missing = 월~금 중 아무 기록(근무/휴무) 없는 날(d <= upToDay) → 실수 검토용.
+// (토요일은 가끔만 근무 → 경고 대상에서 제외. 토요일 근무는 days 로 정상 표시됨.)
 export function weeklyBreakdown(entries, year, month, upToDay = Infinity) {
   return getWeeks(year, month)
     .map((week) => {
