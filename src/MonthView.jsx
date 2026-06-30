@@ -69,8 +69,8 @@ export default function MonthView({ year, month, weeks, entries, showHolidays, n
                     {hol && <span style={{ ...band, background: C.sun }}>{hol}</span>}
                     {e && e.memo && <span style={{ ...band, background: C.honey }}>{e.memo}</span>}
                     {isOff
-                      ? <span style={{ fontSize: 13, fontWeight: 800, color: C.off, textAlign: "center" }}>휴무</span>
-                      : e && <span style={{ fontSize: 14, fontWeight: 800, color: C.honeyDark, textAlign: "center" }}>{fmtHours(hoursOf(e))}</span>}
+                      ? <span style={{ fontSize: 14, fontWeight: 800, color: C.off, textAlign: "center" }}>휴무</span>
+                      : e && <span style={{ fontSize: 16, fontWeight: 800, color: C.honeyDark, textAlign: "center" }}>{fmtHours(hoursOf(e))}</span>}
                   </button>
                 );
               })}
