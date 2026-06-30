@@ -292,9 +292,27 @@ export default function App() {
               )}
             </div>
 
-            {/* 주차별 계산 */}
+            {/* 정리본 */}
+            <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <span style={{ fontWeight: 800, fontSize: 17 }}>정리본</span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={shareText} style={{ ...primaryBtn, padding: "9px 18px", fontSize: 15 }}>공유</button>
+                  <button onClick={copyText} style={{ ...ghostBtn, padding: "9px 16px", fontSize: 15 }}>
+                    {copied ? "복사됨 ✓" : "복사"}
+                  </button>
+                </div>
+              </div>
+              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 16, lineHeight: 1.7,
+                fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
+                background: C.bg, borderRadius: 10, padding: 14, border: `1px dashed ${C.line}` }}>
+                {buildText()}
+              </pre>
+            </div>
+
+            {/* 주차별 계산 (정리본 아래) */}
             {breakdown.length > 0 && (
-              <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}`, marginBottom: 16 }}>
+              <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
                 <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 10 }}>주차별 계산</div>
                 <div style={{ fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", fontSize: 16, lineHeight: 1.9, color: C.ink }}>
                   {breakdown.map((w, i) => (
@@ -312,24 +330,6 @@ export default function App() {
                 </div>
               </div>
             )}
-
-            {/* 정리본 */}
-            <div style={{ background: C.card, borderRadius: 16, padding: 16, border: `1px solid ${C.line}` }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={{ fontWeight: 800, fontSize: 17 }}>정리본</span>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={shareText} style={{ ...primaryBtn, padding: "9px 18px", fontSize: 15 }}>공유</button>
-                  <button onClick={copyText} style={{ ...ghostBtn, padding: "9px 16px", fontSize: 15 }}>
-                    {copied ? "복사됨 ✓" : "복사"}
-                  </button>
-                </div>
-              </div>
-              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 16, lineHeight: 1.7,
-                fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
-                background: C.bg, borderRadius: 10, padding: 14, border: `1px dashed ${C.line}` }}>
-                {buildText()}
-              </pre>
-            </div>
           </>
         )}
 

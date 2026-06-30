@@ -49,25 +49,28 @@ export function weeklyBreakdown(entries, year, month) {
     .map((hrs) => ({ hrs, total: hrs.reduce((a, b) => a + b, 0) }));
 }
 
-// 어머니 형식 정리본 텍스트
+// 어머니 형식 정리본 텍스트 (제목/주차/총합 사이 빈 줄)
 export function buildSummary({ entries, year, month, account }) {
   const weeks = getWeeks(year, month);
-  const lines = [`${month + 1}월 근무시간`];
+  const blocks = []; // 주차 블록 + 총합 블록 (블록 사이는 빈 줄로 구분)
   weeks.forEach((week) => {
-    let any = false;
+    const dayLines = [];
     week.forEach((d) => {
       if (!d) return;
       const e = entries[keyOf(year, month, d)];
       if (!e || !e.start) return; // 휴무({off:true})는 정리본에서 제외
-      any = true;
       const dow = DOW[new Date(year, month, d).getDay()];
-      lines.push(
+      dayLines.push(
         `${month + 1}/${d}(${dow}) ${fmtClock(e.start)}~${fmtClock(e.end)}(${fmtHours(hoursOf(e))})`
       );
     });
-    if (any) lines.push(`=>${fmtHours(weekSum(entries, year, month, week))}`);
+    if (dayLines.length) {
+      dayLines.push(`=>${fmtHours(weekSum(entries, year, month, week))}`);
+      blocks.push(dayLines.join("\n"));
+    }
   });
-  lines.push(`==>총근무시간(${fmtHours(monthTotal(entries, year, month))})`);
-  if (account && account.trim()) lines.push(`==>${account.trim()}`);
-  return lines.join("\n");
+  const totalLines = [`==>총근무시간(${fmtHours(monthTotal(entries, year, month))})`];
+  if (account && account.trim()) totalLines.push(`==>${account.trim()}`);
+  blocks.push(totalLines.join("\n"));
+  return [`${month + 1}월 근무시간`, ...blocks].join("\n\n");
 }

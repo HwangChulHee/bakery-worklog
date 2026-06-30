@@ -81,11 +81,14 @@ describe("buildSummary (어머니 형식)", () => {
     expect(text).toBe(
       [
         "6월 근무시간",
+        "",
         "6/1(월) 8:30~1:30(5h)",
         "6/2(화) 8:30~1:00(4.5h)",
         "=>9.5h",
+        "",
         "6/8(월) 8:30~2:00(5.5h)",
         "=>5.5h",
+        "",
         "==>총근무시간(15h)",
         "==>우리은행(01076004597)",
       ].join("\n")
@@ -121,7 +124,7 @@ describe("buildSummary (어머니 형식)", () => {
 
   it("기록이 전혀 없어도 헤더/총합은 나온다", () => {
     const text = buildSummary({ entries: {}, year: 2026, month: 5, account: "" });
-    expect(text).toBe(["6월 근무시간", "==>총근무시간(0h)"].join("\n"));
+    expect(text).toBe(["6월 근무시간", "", "==>총근무시간(0h)"].join("\n"));
   });
 });
 
