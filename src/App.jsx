@@ -359,7 +359,8 @@ export default function App() {
                               </span>
                             )}
                           </span>
-                          <span style={{ fontSize: isMiss ? 18 : 22, fontWeight: 800, flexShrink: 0,
+                          <span style={{ fontSize: isMiss ? 17 : 22, fontWeight: 800, flexShrink: 0,
+                            width: 108, textAlign: "right", whiteSpace: "nowrap", overflow: "hidden",
                             color: isMiss ? C.sun : isOffRow ? C.off : C.honeyDark }}>
                             {isMiss ? "⚠️ 입력안함" : isOffRow ? "🛌 휴무" : `🍞 ${fmtN(r.hours)}h`}
                           </span>
