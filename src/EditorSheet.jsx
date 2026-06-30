@@ -24,18 +24,19 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, entr
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <span style={{ fontSize: 24, fontWeight: 800 }}>{dateLabel}</span>
             {hasEntry && (
-              <button onClick={() => setConfirming(true)} aria-label="기록 삭제" style={{
-                width: 42, height: 42, borderRadius: 12, cursor: "pointer", fontSize: 18,
+              <button onClick={() => setConfirming(true)} style={{
+                display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 10,
+                cursor: "pointer", fontSize: 15, fontWeight: 800,
                 color: C.sun, background: "#FCEBE9", border: "1px solid #F2C9C4" }}>
-                🗑️
+                🗑️ 삭제
               </button>
             )}
           </div>
 
           {/* 일한 시간 크게 */}
           <div style={{ background: C.workBg, borderRadius: 14, padding: "12px 0", textAlign: "center", marginBottom: 16 }}>
-            <span style={{ fontSize: 16, color: C.honeyDark, fontWeight: 700 }}>근무 </span>
-            <span style={{ fontSize: 32, fontWeight: 800, color: C.honeyDark }}>{fmtHours(draftHours)}</span>
+            <div style={{ fontSize: 14, color: C.honeyDark, fontWeight: 700, marginBottom: 2 }}>근무시간</div>
+            <div style={{ fontSize: 34, fontWeight: 800, color: C.honeyDark, lineHeight: 1 }}>{fmtHours(draftHours)}</div>
           </div>
 
           {/* 시간 선택 */}
@@ -54,8 +55,10 @@ export default function EditorSheet({ editing, draft, setDraft, draftHours, entr
 
           {/* 주요 동작 */}
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={onMarkOff} style={{ ...ghostBtn, flex: 1 }}>🛌 휴무</button>
-            <button onClick={onSave} style={{ ...primaryBtn, flex: 2, padding: "15px 0", fontSize: 18 }}>💾 저장</button>
+            <button onClick={onMarkOff} style={{ ...ghostBtn, flex: 1, fontSize: 18, padding: "15px 0",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>🛌 휴무</button>
+            <button onClick={onSave} style={{ ...primaryBtn, flex: 2, fontSize: 18, padding: "15px 0",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>💾 저장</button>
           </div>
         </div>
       </div>
