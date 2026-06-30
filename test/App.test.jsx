@@ -280,7 +280,7 @@ describe("UX: 공유 / 되돌리기 / 오늘", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "◀" })); // 5월로
     expect(screen.getByText("5월 근무")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /오늘/ }));
+    fireEvent.click(screen.getByRole("button", { name: /오늘로/ }));
     expect(screen.getByText("6월 근무")).toBeInTheDocument();
   });
 });
@@ -348,6 +348,30 @@ describe("월간↔주간 기준일 동기화", () => {
     fireEvent.click(next); fireEvent.click(next); fireEvent.click(next); // 6/15 → 7월로
     fireEvent.click(screen.getByRole("button", { name: "월간" }));
     expect(screen.getByText("7월 근무")).toBeInTheDocument();
+  });
+});
+
+describe("오늘 상태 배너", () => {
+  it("오늘 기록이 없으면 '아직 입력 안 했어요'를 보여준다", () => {
+    renderApp(); // 2026-06-15 (월)
+    expect(screen.getByText("오늘 · 6/15 (월)")).toBeInTheDocument();
+    expect(screen.getByText("아직 입력 안 했어요")).toBeInTheDocument();
+  });
+  it("오늘 근무를 입력했으면 시간/시각을 보여준다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-15": { start: "08:30", end: "13:30" } }));
+    renderApp();
+    expect(screen.getByText("5h · 8:30~1:30")).toBeInTheDocument();
+  });
+  it("오늘이 휴무면 휴무로 표시한다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-15": { off: true } }));
+    renderApp();
+    expect(screen.getAllByText("휴무").length).toBeGreaterThan(0);
+  });
+  it("배너를 누르면 오늘 입력창이 열린다", () => {
+    renderApp();
+    fireEvent.click(screen.getByText("아직 입력 안 했어요"));
+    expect(screen.getByText("6월 15일 (월)")).toBeInTheDocument(); // 입력 시트 헤더
+    expect(screen.getByRole("button", { name: /저장/ })).toBeInTheDocument();
   });
 });
 

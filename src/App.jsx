@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { restoreFromCloud } from "./cloud";
 import { C, FONT, iconBtn, primaryBtn, ghostBtn } from "./theme";
-import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary, weeklyBreakdown } from "./worklog";
-import { hoursOf, fmtHours } from "./time";
+import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary, weeklyBreakdown, DOW } from "./worklog";
+import { hoursOf, fmtHours, fmtClock } from "./time";
 import { useLocalStorage } from "./useLocalStorage";
 import { useDailyBackup } from "./useDailyBackup";
 import LoginScreen from "./LoginScreen";
@@ -238,6 +238,16 @@ export default function App() {
     });
     return runs.map((r) => (r.c > 1 ? `${fmtN(r.v)}×${r.c}` : fmtN(r.v))).join(" + ");
   };
+
+  // 오늘 상태 (상단 배너) — 입력 전 / 근무 N시간 / 휴무
+  const todayEntry = entries[wKeyOf(now.getFullYear(), now.getMonth(), now.getDate())];
+  const todayLabel = `오늘 · ${now.getMonth() + 1}/${now.getDate()} (${DOW[now.getDay()]})`;
+  const todayStatus = !todayEntry
+    ? { text: "아직 입력 안 했어요", emoji: "✏️", color: C.honeyDark, bg: "#FFF4DE", border: C.honey }
+    : todayEntry.off
+      ? { text: "휴무", emoji: "🛌", color: C.off, bg: C.offBg, border: C.off }
+      : { text: `${fmtHours(hoursOf(todayEntry))} · ${fmtClock(todayEntry.start)}~${fmtClock(todayEntry.end)}`,
+          emoji: "🍞", color: C.honeyDark, bg: C.workBg, border: C.honey };
   const copyText = async () => {
     try {
       await navigator.clipboard.writeText(buildText());
@@ -291,6 +301,20 @@ export default function App() {
                 <span style={{ fontSize: 22, lineHeight: 1 }}>⚙</span><span>설정</span>
               </button>
             </div>
+
+            {/* 오늘 상태 배너 (탭하면 오늘 입력창) */}
+            <button onClick={() => openEditor(now.getFullYear(), now.getMonth(), now.getDate())}
+              style={{ width: "100%", marginBottom: 12, padding: "14px 16px", borderRadius: 14, cursor: "pointer",
+                border: `2px solid ${todayStatus.border}`, background: todayStatus.bg, color: C.ink,
+                display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left", fontFamily: "inherit" }}>
+              <span>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: C.sub }}>{todayLabel}</span>
+                <span style={{ display: "block", marginTop: 3, fontSize: 20, fontWeight: 800, color: todayStatus.color }}>
+                  {todayStatus.text}
+                </span>
+              </span>
+              <span style={{ fontSize: 30, lineHeight: 1 }}>{todayStatus.emoji}</span>
+            </button>
 
             <div>
               {view === "month" && (
