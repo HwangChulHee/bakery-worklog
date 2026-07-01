@@ -535,15 +535,11 @@ export default function App() {
               <button onClick={() => setZoom(false)} aria-label="닫기"
                 style={{ ...ghostBtn, padding: "8px 16px", fontSize: 16 }}>닫기 ✕</button>
             </div>
-            <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 27, lineHeight: 1.7,
+            <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 18, lineHeight: 1.7,
               fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink, flex: 1, overflowY: "auto",
               background: C.bg, borderRadius: 12, padding: 16, border: `1px dashed ${C.line}` }}>
               {summaryText}
             </pre>
-            <button onClick={() => { copyText(); }} style={{ ...primaryBtn, width: "100%", marginTop: 12,
-              fontSize: 18, padding: "15px 0" }}>
-              {copied ? "복사됨 ✓" : "복사"}
-            </button>
           </div>
         </div>
       )}
