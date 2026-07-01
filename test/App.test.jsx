@@ -187,6 +187,15 @@ describe("근무 입력 흐름", () => {
     expect(JSON.parse(localStorage.getItem("entries"))["2026-6-4"].start).toBe("09:00");
   });
 
+  it("범위 밖(레거시) 시간이 저장돼 있어도 그 값이 선택되어 보인다", () => {
+    // 6시(8~18 밖), 15분(0/30 밖) — 예외 폴백으로 목록에 남아야 함
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-2": { start: "06:15", end: "18:30" } }));
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^6월 2일/ }));
+    expect(screen.getByLabelText("출근 시").value).toBe("6");
+    expect(screen.getByLabelText("출근 분").value).toBe("15");
+  });
+
   it("날짜에 메모를 남기면 저장되고 주간 보기에 표시된다", () => {
     renderApp();
     fireEvent.click(screen.getByRole("button", { name: "6월 16일" })); // 이번 주(화)
@@ -539,6 +548,23 @@ describe("클라우드 백업 / 로그아웃", () => {
     fireEvent.click(screen.getByRole("button", { name: "달력" })); // 달력으로
     expect(document.body.textContent).toContain("6/2(화)");
     expect(document.body.textContent).toContain("복구은행(1)");
+  });
+
+  it("오늘 이미 자동 백업했으면 변경 후에도 자동 백업을 건너뛴다", () => {
+    localStorage.setItem("auth", JSON.stringify({ name: "철희", password: "pw" }));
+    localStorage.setItem("lastBackupDate", "2026-6-15"); // 오늘(고정 시스템 시간)
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+    vi.stubGlobal("fetch", fetchMock);
+    renderApp();
+    // 기록 변경(더티) 후 백그라운드 전환 → 자동 백업 시도
+    fireEvent.click(screen.getByRole("button", { name: "6월 4일" }));
+    fireEvent.click(screen.getByRole("button", { name: /저장/ }));
+    const orig = Object.getOwnPropertyDescriptor(Document.prototype, "visibilityState");
+    Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+    act(() => { document.dispatchEvent(new Event("visibilitychange")); });
+    expect(fetchMock).not.toHaveBeenCalled(); // 하루 1번 규칙으로 skip
+    if (orig) Object.defineProperty(document, "visibilityState", orig);
+    else Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
   });
 
   it("로그아웃하면 로그인 화면으로 돌아간다", () => {
