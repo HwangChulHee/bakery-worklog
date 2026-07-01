@@ -1,6 +1,7 @@
 name: CI
 
-# main 푸시 / PR 마다 lint · test · build 를 검증 (배포 전 안전장치)
+# main 푸시 / PR 마다 lint · test · build 검증.
+# main 푸시일 때만, 검증 통과 후 Vercel 프로덕션 배포(= CI 게이트).
 on:
   push:
     branches: [main]
@@ -30,3 +31,46 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  deploy:
+    # verify 가 통과해야만 실행 + main 직접 푸시일 때만 (PR 은 배포 안 함)
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # 시크릿 미설정 시(초기 세팅 전) 배포를 건너뛰어 실패로 뜨지 않게 함
+      - name: Check Vercel secrets
+        id: check
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::VERCEL_TOKEN 미설정 — 배포 건너뜀. Secrets 3개 등록 후 활성화됩니다."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Vercel CLI
+        if: steps.check.outputs.ready == 'true'
+        run: npm i -g vercel@latest
+
+      - name: Pull Vercel project settings
+        if: steps.check.outputs.ready == 'true'
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build (Vercel)
+        if: steps.check.outputs.ready == 'true'
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to production
+        if: steps.check.outputs.ready == 'true'
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
