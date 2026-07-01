@@ -258,14 +258,17 @@ export default function App() {
   // Android 뒤로가기: 모달이 열려 있으면 닫고, 홈에서는 두 번 눌러야 종료
   const editingRef = useRef(editing);
   const tabRef = useRef(tab);
+  const zoomRef = useRef(zoom);
   const armedRef = useRef(false);
   const [exitToast, setExitToast] = useState(false);
   useEffect(() => { editingRef.current = editing; }, [editing]);
   useEffect(() => { tabRef.current = tab; }, [tab]);
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
   useEffect(() => {
     const guard = () => { try { window.history.pushState({ guard: true }, ""); } catch { /* 무시 */ } };
     guard(); // 뒤로가기를 잡아낼 항목 1개 유지
     const onPop = () => {
+      if (zoomRef.current) { setZoom(false); guard(); return; }                 // 정리본 확대 닫기
       if (editingRef.current != null) { setEditing(null); guard(); return; }   // 입력시트 닫기
       if (tabRef.current === "settings") { setTab("cal"); guard(); return; }    // 설정 닫기
       if (armedRef.current) { try { window.history.back(); } catch { /* 무시 */ } return; } // 두 번째 → 종료
@@ -536,7 +539,8 @@ export default function App() {
                 style={{ ...ghostBtn, padding: "8px 16px", fontSize: 16 }}>닫기 ✕</button>
             </div>
             <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 18, lineHeight: 1.7,
-              fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink, flex: 1, overflowY: "auto",
+              fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
+              flex: "1 1 auto", minHeight: 0, overflowY: "auto",
               background: C.bg, borderRadius: 12, padding: 16, border: `1px dashed ${C.line}` }}>
               {summaryText}
             </pre>

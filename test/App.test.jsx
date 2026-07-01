@@ -279,6 +279,15 @@ describe("복사하기", () => {
     fireEvent.click(screen.getByRole("button", { name: "닫기" }));
     expect(screen.queryByRole("button", { name: "닫기" })).not.toBeInTheDocument();
   });
+
+  it("확대 모달에서 뒤로가기를 하면 모달만 닫히고 앱은 유지된다", () => {
+    renderApp();
+    fireEvent.click(screen.getByTitle("탭하면 크게 볼 수 있어요"));
+    expect(screen.getByRole("button", { name: "닫기" })).toBeInTheDocument();
+    act(() => { window.dispatchEvent(new PopStateEvent("popstate")); });
+    expect(screen.queryByRole("button", { name: "닫기" })).not.toBeInTheDocument();
+    expect(screen.getByText("정리본")).toBeInTheDocument(); // 앱은 그대로
+  });
 });
 
 describe("월 이동", () => {
