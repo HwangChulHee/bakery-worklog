@@ -409,7 +409,7 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 21, lineHeight: 1.7,
+              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 18, lineHeight: 1.7,
                 fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
                 background: C.bg, borderRadius: 10, padding: 14, border: `1px dashed ${C.line}` }}>
                 {summaryText}
