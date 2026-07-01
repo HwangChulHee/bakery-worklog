@@ -58,6 +58,7 @@ export default function App() {
   const [draft, setDraft] = useState({ start: BASE_DEF.start, end: BASE_DEF.end, memo: "" });
   const [mode, setMode] = useState("work"); // "work" | "off"
   const [copied, setCopied] = useState(false);
+  const [zoom, setZoom] = useState(false); // 정리본 확대 보기 모달
   const [cloud, setCloud] = useState({ status: "", msg: "" }); // "", saving, saved, restoring, restored, error
   const [login, setLogin] = useState({ busy: false, error: "", offline: false });
   const [booting, setBooting] = useState(true);
@@ -409,11 +410,15 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 18, lineHeight: 1.7,
-                fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
+              <pre onClick={() => setZoom(true)} title="탭하면 크게 볼 수 있어요"
+                style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 18, lineHeight: 1.7,
+                fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink, cursor: "pointer",
                 background: C.bg, borderRadius: 10, padding: 14, border: `1px dashed ${C.line}` }}>
                 {summaryText}
               </pre>
+              <div style={{ marginTop: 8, textAlign: "center", fontSize: 13, fontWeight: 700, color: C.sub }}>
+                🔍 탭하면 크게 볼 수 있어요
+              </div>
             </div>
 
             {/* 주차별 계산 (검산) */}
@@ -514,6 +519,33 @@ export default function App() {
         <EditorSheet key={editKey} editing={editing} draft={draft} setDraft={setDraft}
           mode={mode} setMode={setMode} draftHours={hoursOf(draft)} entry={entries[editKey] || null}
           onSave={() => save(entryFromDraft())} onRemove={removeDay} onClose={closeEditor} />
+      )}
+
+      {/* 정리본 확대 보기 */}
+      {zoom && (
+        <div onClick={() => setZoom(false)} style={{ position: "fixed", inset: 0, zIndex: 40,
+          background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, width: "100%", maxWidth: 460,
+            maxHeight: "90vh", borderRadius: 20, padding: 18, boxSizing: "border-box",
+            display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <span style={{ fontWeight: 800, fontSize: 20, display: "inline-flex", alignItems: "center", gap: 7 }}>
+                <span style={{ fontSize: 20, lineHeight: 1 }}>🔍</span>정리본
+              </span>
+              <button onClick={() => setZoom(false)} aria-label="닫기"
+                style={{ ...ghostBtn, padding: "8px 16px", fontSize: 16 }}>닫기 ✕</button>
+            </div>
+            <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 27, lineHeight: 1.7,
+              fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink, flex: 1, overflowY: "auto",
+              background: C.bg, borderRadius: 12, padding: 16, border: `1px dashed ${C.line}` }}>
+              {summaryText}
+            </pre>
+            <button onClick={() => { copyText(); }} style={{ ...primaryBtn, width: "100%", marginTop: 12,
+              fontSize: 18, padding: "15px 0" }}>
+              {copied ? "복사됨 ✓" : "복사"}
+            </button>
+          </div>
+        </div>
       )}
 
       {snack && (

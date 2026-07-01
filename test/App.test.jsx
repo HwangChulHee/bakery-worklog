@@ -271,6 +271,14 @@ describe("복사하기", () => {
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(writeText.mock.calls[0][0]).toContain("==>총근무시간");
   });
+
+  it("정리본을 탭하면 확대 모달이 열리고 닫힌다", () => {
+    renderApp();
+    fireEvent.click(screen.getByTitle("탭하면 크게 볼 수 있어요"));
+    expect(screen.getByRole("button", { name: "닫기" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "닫기" }));
+    expect(screen.queryByRole("button", { name: "닫기" })).not.toBeInTheDocument();
+  });
 });
 
 describe("월 이동", () => {
