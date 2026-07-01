@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { restoreFromCloud } from "./cloud";
 import { C, FONT, iconBtn, primaryBtn, ghostBtn } from "./theme";
 import { keyOf as wKeyOf, getWeeks, monthTotal as wMonthTotal, buildSummary, weeklyBreakdown, DOW } from "./worklog";
 import { hoursOf, fmtHours, fmtClock } from "./time";
+import { holidayName } from "./holidays";
+import pkg from "../package.json";
 import { useLocalStorage } from "./useLocalStorage";
 import { useDailyBackup } from "./useDailyBackup";
 import LoginScreen from "./LoginScreen";
@@ -175,6 +177,7 @@ export default function App() {
   // 복구: 비밀번호 다시 입력 → 클라우드 데이터로 덮어쓰기
   const doRestore = async () => {
     if (!auth) return;
+    if (!window.confirm("현재 기기의 기록을 클라우드 내용으로 덮어씁니다. 계속할까요?")) return;
     const pw = window.prompt("복구하려면 비밀번호를 다시 입력하세요");
     if (pw == null || pw === "") return;
     setCloud({ status: "restoring", msg: "" });
@@ -186,6 +189,44 @@ export default function App() {
     } catch (e) {
       setCloud({ status: "error", msg: e.message });
     }
+  };
+
+  // 로컬 백업: 서버 없이 파일로 내보내기 (클라우드 미설정 시 유일한 안전망)
+  const exportData = () => {
+    const payload = { _app: "bakery-worklog", version: pkg.version,
+      entries, account, dayDefaults, showHolidays };
+    try {
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const now2 = new Date();
+      const stamp = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, "0")}-${String(now2.getDate()).padStart(2, "0")}`;
+      a.href = url;
+      a.download = `bakery-worklog-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showSnack("파일로 내보냈어요");
+    } catch {
+      showSnack("내보내기에 실패했어요");
+    }
+  };
+  // 로컬 백업: 파일에서 가져오기 (현재 기기 기록을 덮어씀)
+  const importData = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try { data = JSON.parse(reader.result); }
+      catch { showSnack("파일을 읽지 못했어요"); return; }
+      if (!data || typeof data !== "object" || !data.entries) { showSnack("올바른 백업 파일이 아니에요"); return; }
+      if (!window.confirm("현재 기기의 기록을 이 파일 내용으로 덮어씁니다. 계속할까요?")) return;
+      applyData(data);
+      showSnack("파일에서 가져왔어요");
+    };
+    reader.onerror = () => showSnack("파일을 읽지 못했어요");
+    reader.readAsText(file);
   };
 
   // 시작 스플래시 (자동 로그인은 localStorage 의 auth 로 처리)
@@ -236,7 +277,10 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  const buildText = () => buildSummary({ entries, year, month, account });
+  const summaryText = useMemo(
+    () => buildSummary({ entries, year, month, account }),
+    [entries, year, month, account]
+  );
   // 미입력 평일 경고 범위: 이번 달은 "어제"까지(오늘은 아직 안 끝났으니 제외), 지난 달은 전체, 다음 달은 없음
   const isThisMonth = year === now.getFullYear() && month === now.getMonth();
   const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
@@ -257,6 +301,7 @@ export default function App() {
   // 오늘 상태 (상단 배너) — 입력 전 / 주말 / 근무 N시간 / 휴무
   const todayEntry = entries[wKeyOf(now.getFullYear(), now.getMonth(), now.getDate())];
   const todayLabel = `오늘 · ${now.getMonth() + 1}/${now.getDate()} (${DOW[now.getDay()]})`;
+  const todayHoliday = showHolidays ? holidayName(now.getFullYear(), now.getMonth(), now.getDate()) : null;
   const isWeekend = now.getDay() === 0 || now.getDay() === 6; // 토·일
   const todayStatus = !todayEntry
     ? (isWeekend
@@ -268,13 +313,13 @@ export default function App() {
           emoji: "🍞", color: C.honeyDark, bg: C.workBg, border: C.honey };
   const copyText = async () => {
     try {
-      await navigator.clipboard.writeText(buildText());
+      await navigator.clipboard.writeText(summaryText);
       setCopied(true); setTimeout(() => setCopied(false), 1500);
     } catch { /* clipboard 차단 시 미리보기에서 직접 복사 */ }
   };
   // 공유: 지원하면 공유 시트(카톡 등), 아니면 복사로 폴백
   const shareText = async () => {
-    const text = buildText();
+    const text = summaryText;
     if (navigator.share) { try { await navigator.share({ text }); } catch { /* 취소 무시 */ } }
     else copyText();
   };
@@ -327,6 +372,11 @@ export default function App() {
                 display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left", fontFamily: "inherit" }}>
               <span>
                 <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: C.sub }}>{todayLabel}</span>
+                {todayHoliday && (
+                  <span style={{ display: "block", marginTop: 1, fontSize: 13, fontWeight: 800, color: C.sun }}>
+                    🎌 공휴일 · {todayHoliday}
+                  </span>
+                )}
                 <span style={{ display: "block", marginTop: 3, fontSize: 20, fontWeight: 800, color: todayStatus.color }}>
                   {todayStatus.text}
                 </span>
@@ -362,7 +412,7 @@ export default function App() {
               <pre style={{ margin: 0, whiteSpace: "pre-wrap", textAlign: "left", fontSize: 21, lineHeight: 1.7,
                 fontFamily: "'SF Mono', ui-monospace, Menlo, monospace", color: C.ink,
                 background: C.bg, borderRadius: 10, padding: 14, border: `1px dashed ${C.line}` }}>
-                {buildText()}
+                {summaryText}
               </pre>
             </div>
 
@@ -455,6 +505,7 @@ export default function App() {
             showHolidays={showHolidays} setShowHolidays={setShowHolidays}
             auth={auth} cloud={cloud}
             onBackup={() => flushBackup(true)} onRestore={doRestore}
+            onExport={exportData} onImport={importData}
             onLogout={logout} onBack={() => setTab("cal")} />
         )}
       </div>

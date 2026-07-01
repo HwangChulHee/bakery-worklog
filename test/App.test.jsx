@@ -566,6 +566,7 @@ describe("클라우드 백업 / 로그아웃", () => {
     localStorage.setItem("auth", JSON.stringify({ name: "철희", password: "mypw" }));
     const data = { entries: { "2026-6-2": { start: "08:30", end: "13:30" } }, account: "복구은행(1)" };
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data }) }));
+    vi.spyOn(window, "confirm").mockReturnValue(true); // 덮어쓰기 확인
     vi.spyOn(window, "prompt").mockReturnValue("mypw");
 
     renderApp();
@@ -616,5 +617,82 @@ describe("클라우드 백업 / 로그아웃", () => {
     fireEvent.click(screen.getByRole("button", { name: "로그아웃" }));
     expect(screen.getByPlaceholderText("이름")).toBeInTheDocument();
     expect(screen.queryByText("정리본")).not.toBeInTheDocument();
+  });
+
+  it("복구 확인(confirm)을 취소하면 덮어쓰지 않는다", async () => {
+    localStorage.setItem("auth", JSON.stringify({ name: "철희", password: "mypw" }));
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    vi.spyOn(window, "confirm").mockReturnValue(false); // 덮어쓰기 취소
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "클라우드 백업" }));
+    fireEvent.click(screen.getByRole("button", { name: "복구" }));
+    expect(fetchMock).not.toHaveBeenCalled(); // 서버 요청조차 안 감
+  });
+});
+
+describe("파일 백업 (로컬 내보내기/가져오기)", () => {
+  it("내보내기를 누르면 파일을 만들고 스낵바를 보여준다", () => {
+    localStorage.setItem("entries", JSON.stringify({ "2026-6-2": { start: "08:30", end: "13:30" } }));
+    const createURL = vi.fn(() => "blob:x");
+    vi.stubGlobal("URL", { createObjectURL: createURL, revokeObjectURL: vi.fn() });
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "파일 백업" }));
+    fireEvent.click(screen.getByRole("button", { name: "내보내기" }));
+    expect(createURL).toHaveBeenCalled();
+    expect(clickSpy).toHaveBeenCalled();
+    expect(document.body.textContent).toContain("파일로 내보냈어요");
+  });
+
+  it("가져오기: 올바른 파일을 고르면 기록을 덮어쓴다", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const { container } = renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "파일 백업" }));
+    const input = container.querySelector('input[type="file"]');
+    const payload = JSON.stringify({
+      _app: "bakery-worklog",
+      entries: { "2026-6-2": { start: "08:30", end: "13:30" } },
+      account: "파일은행(9)",
+    });
+    const file = new File([payload], "backup.json", { type: "application/json" });
+    await act(async () => { fireEvent.change(input, { target: { files: [file] } }); });
+    await waitFor(() => expect(document.body.textContent).toContain("파일에서 가져왔어요"));
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "달력" }));
+    expect(document.body.textContent).toContain("파일은행(9)");
+    expect(document.body.textContent).toContain("6/2(화)");
+  });
+
+  it("가져오기: 잘못된 파일이면 오류 스낵바만 보여준다", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const { container } = renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "설정" }));
+    fireEvent.click(screen.getByRole("button", { name: "파일 백업" }));
+    const input = container.querySelector('input[type="file"]');
+    const file = new File(["{망가진 파일"], "bad.json", { type: "application/json" });
+    await act(async () => { fireEvent.change(input, { target: { files: [file] } }); });
+    await waitFor(() => expect(document.body.textContent).toContain("파일을 읽지 못했어요"));
+  });
+});
+
+describe("입력 검증 / 오늘 공휴일", () => {
+  it("퇴근이 출근보다 빠르면 경고를 띄우고 저장을 막는다", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "6월 4일" })); // 기본 08:30~13:30
+    fireEvent.change(screen.getByLabelText("퇴근 시"), { target: { value: "8" } });
+    fireEvent.change(screen.getByLabelText("퇴근 분"), { target: { value: "0" } }); // 08:00 < 08:30
+    expect(screen.getByText(/퇴근 시간이 출근보다 빨라요/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /저장/ })); // disabled → 무시
+    expect(JSON.parse(localStorage.getItem("entries") || "{}")["2026-6-4"]).toBeUndefined();
+  });
+
+  it("오늘이 공휴일이면 상단 배너에 공휴일 이름을 보여준다", () => {
+    vi.setSystemTime(new Date(2026, 5, 3, 9, 0, 0)); // 6/3 지방선거일
+    renderApp();
+    expect(document.body.textContent).toContain("지방선거일");
   });
 });

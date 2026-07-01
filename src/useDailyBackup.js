@@ -1,7 +1,8 @@
 import { useRef, useEffect, useCallback } from "react";
 import { backupToCloud } from "./cloud";
+import { keyOf } from "./worklog";
 
-const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+const todayStr = () => { const d = new Date(); return keyOf(d.getFullYear(), d.getMonth(), d.getDate()); };
 const readLastBackup = () => { try { return localStorage.getItem("lastBackupDate") || ""; } catch { return ""; } };
 const writeLastBackup = (v) => { try { localStorage.setItem("lastBackupDate", v); } catch { /* 무시 */ } };
 

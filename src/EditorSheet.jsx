@@ -19,6 +19,7 @@ export default function EditorSheet({ editing, draft, setDraft, mode, setMode, d
   const [confirming, setConfirming] = useState(false);
   const hasEntry = !!entry;
   const isOff = mode === "off";
+  const invalid = !isOff && draftHours <= 0; // 퇴근이 출근보다 빠르거나 같음
   const dateLabel = `${editing.m + 1}월 ${editing.d}일 (${DOW[new Date(editing.y, editing.m, editing.d).getDay()]})`;
   const recordLabel = entry
     ? (entry.off ? "휴무" : `${fmtClock(entry.start)}~${fmtClock(entry.end)} (${fmtHours(hoursOf(entry))})`)
@@ -81,6 +82,16 @@ export default function EditorSheet({ editing, draft, setDraft, mode, setMode, d
               onChange={(v) => setDraft({ ...draft, end: v })} />
           </div>
 
+          {/* 퇴근<출근 경고 */}
+          {invalid && (
+            <div style={{ background: "#FDECEC", border: `1px solid ${C.sun}`, borderRadius: 12,
+              padding: "12px 14px", marginBottom: 16, fontSize: 16, fontWeight: 700, color: C.sun,
+              display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ lineHeight: 1 }}>⚠️</span>
+              <span>퇴근 시간이 출근보다 빨라요. 다시 확인해 주세요.</span>
+            </div>
+          )}
+
           {/* 메모 */}
           <div style={{ fontSize: 14, color: C.note, fontWeight: 700, marginBottom: 6 }}>메모</div>
           <textarea value={draft.memo} onChange={(e) => setDraft({ ...draft, memo: e.target.value })}
@@ -89,9 +100,10 @@ export default function EditorSheet({ editing, draft, setDraft, mode, setMode, d
               border: `1px solid ${C.note}`, borderRadius: 12, padding: "12px 12px",
               fontSize: 18, color: C.ink, background: C.noteBg, fontFamily: "inherit", outline: "none" }} />
 
-          {/* 저장 (전폭, 단일) */}
-          <button onClick={onSave} style={{ ...primaryBtn, width: "100%", fontSize: 20, padding: "17px 0",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          {/* 저장 (전폭, 단일) — 퇴근<출근이면 비활성 */}
+          <button onClick={onSave} disabled={invalid} style={{ ...primaryBtn, width: "100%", fontSize: 20, padding: "17px 0",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            opacity: invalid ? 0.5 : 1, cursor: invalid ? "not-allowed" : "pointer" }}>
             <span style={{ lineHeight: 1 }}>💾</span><span>저장</span>
           </button>
         </div>

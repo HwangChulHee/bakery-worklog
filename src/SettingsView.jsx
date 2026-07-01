@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { C, iconBtn, ghostBtn } from "./theme";
 import TimeField from "./TimeField";
 import pkg from "../package.json";
@@ -13,10 +13,11 @@ const grayBtn = { background: C.gray, color: "#fff", border: "none", borderRadiu
 export default function SettingsView({
   dayDefaults, setDayDefaults,
   account, setAccount, showHolidays, setShowHolidays,
-  auth, cloud, onBackup, onRestore, onLogout, onBack,
+  auth, cloud, onBackup, onRestore, onExport, onImport, onLogout, onBack,
 }) {
   const [selDow, setSelDow] = useState(1);
   const [openCat, setOpenCat] = useState(null);
+  const fileRef = useRef(null);
   const cur = (dayDefaults && dayDefaults[selDow]) || BASE_DEF;
   const updateDow = (field, v) =>
     setDayDefaults((p) => ({ ...p, [selDow]: { ...((p && p[selDow]) || BASE_DEF), [field]: v } }));
@@ -26,6 +27,7 @@ export default function SettingsView({
     { key: "summary", icon: "💰", title: "정리본", desc: "입금 계좌" },
     { key: "calendar", icon: "📅", title: "달력 표시", desc: "공휴일 표시" },
     { key: "backup", icon: "☁️", title: "클라우드 백업", desc: "백업 · 복구" },
+    { key: "file", icon: "💾", title: "파일 백업", desc: "파일로 내보내기 · 가져오기" },
     { key: "account", icon: "👤", title: "계정", desc: auth.name },
   ];
   const active = CATS.find((c) => c.key === openCat);
@@ -145,6 +147,29 @@ export default function SettingsView({
           <div style={{ fontSize: 13, color: C.gray, textAlign: "center", lineHeight: 1.6, marginTop: 14 }}>
             기록은 이 기기에 저장되고, 클라우드 자동 백업은 <b>하루 1번</b>만 됩니다.
             그날 추가로 바꾼 내용을 바로 저장하려면 <b>“지금 백업”</b>을 눌러주세요.
+          </div>
+        </>
+      )}
+
+      {/* 상세: 파일 백업 (서버 없이 로컬 파일로) */}
+      {openCat === "file" && (
+        <>
+          <div style={card}>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={onExport} style={{ ...grayBtn, flex: 1, padding: "13px 0", fontSize: 16 }}>
+                내보내기
+              </button>
+              <button onClick={() => fileRef.current && fileRef.current.click()}
+                style={{ ...ghostBtn, flex: 1, padding: "13px 0", fontSize: 16, border: `1px solid ${C.grayLine}` }}>
+                가져오기
+              </button>
+            </div>
+            <input ref={fileRef} type="file" accept="application/json,.json" style={{ display: "none" }}
+              onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) onImport(f); e.target.value = ""; }} />
+          </div>
+          <div style={{ fontSize: 13, color: C.gray, textAlign: "center", lineHeight: 1.6, marginTop: 14 }}>
+            <b>내보내기</b>: 모든 기록을 파일 하나로 저장해요. 카톡·메일로 보내두면 안전해요.<br />
+            <b>가져오기</b>: 저장해 둔 파일을 골라 이 기기에 되살려요. 지금 기록은 덮어써져요.
           </div>
         </>
       )}
