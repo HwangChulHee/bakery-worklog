@@ -65,13 +65,10 @@ export default function WeekView({ weekDays, entries, showHolidays, now, weekTot
                 )}
               </span>
               <span style={{ fontSize: 22, fontWeight: 800, whiteSpace: "nowrap",
-                display: "inline-flex", alignItems: "center", gap: 4,
                 color: isOff ? C.off : e ? C.honeyDark : C.line }}>
                 {isOff
-                  ? <><span style={{ fontSize: 15, lineHeight: 1 }}>🛌</span>휴무</>
-                  : e
-                    ? <><span style={{ fontSize: 15, lineHeight: 1 }}>🍞</span>{`${fmtClock(e.start)}~${fmtClock(e.end)} · ${fmtHours(hoursOf(e))}`}</>
-                    : "—"}
+                  ? "휴무"
+                  : e ? `${fmtClock(e.start)}~${fmtClock(e.end)} · ${fmtHours(hoursOf(e))}` : "—"}
               </span>
             </button>
           );
