@@ -1,0 +1,10 @@
+#!/bin/sh
+# push 전 로컬 자동 검증 (CI와 동일: lint · test · build).
+# 실패하면 push 를 중단해서, CI 빨간불 전에 로컬에서 먼저 거른다.
+echo "▶ pre-push: npm run verify (lint · test · build) 실행 중…"
+if ! npm run verify; then
+  echo "✗ 검증 실패 — push 를 중단합니다. 위 오류를 고친 뒤 다시 push 하세요."
+  echo "  (정말 건너뛰어야 하면: git push --no-verify)"
+  exit 1
+fi
+echo "✓ 검증 통과 — push 계속 진행"
