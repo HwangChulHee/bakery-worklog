@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 import App from "../src/App.jsx";
 
 // 달력이 "오늘" 기준으로 그려지므로 시스템 시간을 2026-06-15 로 고정
@@ -451,6 +451,36 @@ describe("입력 엣지 케이스 (검산 경고)", () => {
   });
 });
 
+describe("설치 / 종료 / 저장 안정성", () => {
+  it("beforeinstallprompt 후 설치 버튼이 뜨고, 누르면 prompt 호출 후 사라진다", async () => {
+    renderApp();
+    const evt = new Event("beforeinstallprompt");
+    evt.prompt = vi.fn();
+    evt.userChoice = Promise.resolve({ outcome: "accepted" });
+    act(() => { window.dispatchEvent(evt); });
+    const btn = screen.getByText(/홈 화면에 앱으로 설치/);
+    fireEvent.click(btn);
+    expect(evt.prompt).toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByText(/홈 화면에 앱으로 설치/)).not.toBeInTheDocument());
+  });
+
+  it("홈에서 뒤로가기 두 번이면 종료(history.back)한다", () => {
+    renderApp();
+    const backSpy = vi.spyOn(window.history, "back").mockImplementation(() => {});
+    act(() => { window.dispatchEvent(new PopStateEvent("popstate")); }); // 1번째: 안내
+    expect(screen.getByText("한 번 더 누르면 종료됩니다")).toBeInTheDocument();
+    act(() => { window.dispatchEvent(new PopStateEvent("popstate")); }); // 2번째: 종료
+    expect(backSpy).toHaveBeenCalled();
+    backSpy.mockRestore();
+  });
+
+  it("저장값이 손상돼도(JSON 파싱 실패) 기본값으로 안전하게 시작한다", () => {
+    localStorage.setItem("account", "{손상된 값");
+    renderApp();
+    expect(screen.getByText("정리본")).toBeInTheDocument(); // 폴백으로 정상 렌더
+  });
+});
+
 describe("로그인 게이트", () => {
   it("로그인 안 된 상태면 로그인 화면이 뜨고 달력은 안 보인다", () => {
     localStorage.removeItem("auth");
@@ -548,6 +578,18 @@ describe("클라우드 백업 / 로그아웃", () => {
     fireEvent.click(screen.getByRole("button", { name: "달력" })); // 달력으로
     expect(document.body.textContent).toContain("6/2(화)");
     expect(document.body.textContent).toContain("복구은행(1)");
+  });
+
+  it("변경 후 8초 뒤 자동 백업이 전송된다(하루 처음)", async () => {
+    localStorage.setItem("auth", JSON.stringify({ name: "철희", password: "pw" }));
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+    vi.stubGlobal("fetch", fetchMock);
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "6월 4일" }));
+    fireEvent.click(screen.getByRole("button", { name: /저장/ }));
+    await act(async () => { vi.advanceTimersByTime(8000); });
+    expect(fetchMock).toHaveBeenCalled();
+    expect(localStorage.getItem("lastBackupDate")).toBeTruthy();
   });
 
   it("오늘 이미 자동 백업했으면 변경 후에도 자동 백업을 건너뛴다", () => {
