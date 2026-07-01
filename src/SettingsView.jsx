@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { C, iconBtn, ghostBtn } from "./theme";
 import TimeField from "./TimeField";
+import pkg from "../package.json";
 
 const WEEKDAYS = [[1, "월"], [2, "화"], [3, "수"], [4, "목"], [5, "금"]];
 const BASE_DEF = { start: "08:30", end: "13:30" };
@@ -58,6 +59,13 @@ export default function SettingsView({
               <span style={{ fontSize: 22, color: C.gray, lineHeight: 1 }}>›</span>
             </button>
           ))}
+        </div>
+      )}
+
+      {/* 버전 (리스트 화면 하단) */}
+      {!openCat && (
+        <div style={{ fontSize: 13, color: C.gray, textAlign: "center", marginTop: 16 }}>
+          빵집 근무시간 · 버전 {pkg.version}
         </div>
       )}
 

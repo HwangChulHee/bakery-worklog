@@ -67,6 +67,7 @@ describe("탭 전환 / 설정", () => {
     expect(screen.getByText("달력 표시")).toBeInTheDocument();
     expect(screen.getByText("클라우드 백업")).toBeInTheDocument();
     expect(screen.getByText("계정")).toBeInTheDocument();
+    expect(screen.getByText(/버전 \d+\.\d+\.\d+/)).toBeInTheDocument();
   });
 
   it("정리본 카테고리에서 계좌 변경이 localStorage 와 정리본에 반영된다", () => {
